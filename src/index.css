@@ -18,7 +18,7 @@
   /* Teacher's Custom Brand Color */
   --color-slack: #5c3B58;
   --color-slack-dark: #481349;
-
+  --color-slack-medium: #5E2C5F;
   /* Shadcn & System Colors mapped to CSS Variables */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
