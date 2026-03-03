@@ -1,12 +1,10 @@
 @import "tailwindcss";
-
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Border Radii - Standardized to your teacher's logic */
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -15,46 +13,36 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  /* Teacher's Custom Brand Color */
   --color-slack: #5c3B58;
   --color-slack-dark: #481349;
   --color-slack-medium: #5E2C5F;
-  /* Shadcn & System Colors mapped to CSS Variables */
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
-  
   --color-popover: var(--popover);
   --color-popover-foreground: var(--popover-foreground);
-  
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Sidebar Specifics */
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -67,8 +55,7 @@
 
 :root {
   --radius: 0.625rem;
-  
-  /* Light Mode Palette (Oklch) */
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
   --card: oklch(1 0 0);
@@ -88,7 +75,7 @@
   --border: oklch(0.929 0.013 255.508);
   --input: oklch(0.929 0.013 255.508);
   --ring: oklch(0.704 0.04 256.788);
-  
+
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -106,7 +93,6 @@
 }
 
 .dark {
-  /* Dark Mode Palette (Oklch) */
   --background: oklch(0.129 0.042 264.695);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.208 0.042 265.755);
@@ -126,7 +112,7 @@
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
   --ring: oklch(0.551 0.027 264.364);
-  
+
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
@@ -147,7 +133,60 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ============================= */
+/* Quill Editor Custom Styling   */
+/* ============================= */
+
+@layer components {
+  .ql-toolbar {
+    border: none !important;
+    background-color: #f8f8f8 !important;
+  }
+
+  .ql-toolbar .ql-formats:not(:last-child) {
+    border-right: 1px solid #dcdcdc !important;
+    padding-right: 12px !important;
+  }
+
+  .ql-container {
+    border: none !important;
+    height: unset !important;
+    font-family: 'Lato', sans-serif !important;
+  }
+
+  .ql-editor {
+    font-family: 'Lato', sans-serif !important;
+    font-size: 14px !important;
+    line-height: 22px !important;
+    padding: 8px 12px !important;
+    color: #1d1d1d !important;
+    font-weight: 400 !important;
+  }
+
+  .ql-editor a {
+    color: #1264a3 !important;
+  }
+
+  .ql-editor a:hover {
+    text-decoration: underline !important;
+  }
+
+  .ql-renderer {
+    padding: 0 !important;
+  }
+
+  .ql-editor:before {
+    left: 12px !important;
+    font-family: 'Lato', sans-serif !important;
+    font-style: normal !important;
+    font-weight: 400 !important;
+    color: #8d8d8d !important;
+    @apply truncate;
   }
 }
