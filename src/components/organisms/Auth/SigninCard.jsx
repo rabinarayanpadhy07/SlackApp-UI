@@ -22,7 +22,7 @@ export const SigninCard = ({
     
 
     return (
-        <Card classname="w-full h-full">
+        <Card className="w-full h-full">
             <CardHeader>
                 <CardTitle>Sign In</CardTitle>
                 <CardDescription>Sign in to access your account</CardDescription>
