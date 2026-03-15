@@ -11,21 +11,28 @@ export const AuthContextProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        const user = localStorage.getItem('user');
+        const storedUser = localStorage.getItem('user');
         const token = localStorage.getItem('token');
-        if(user && token) {
-            setAuth({
-                user: JSON.parse(user),
-                token,
-                isLoading: false
-            });
-        } else {
-            setAuth({
-                user: null,
-                token: null,
-                isLoading: false
-            });
+
+        if (storedUser && storedUser !== 'undefined' && token) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                setAuth({
+                    user: parsedUser,
+                    token,
+                    isLoading: false
+                });
+                return;
+            } catch (error) {
+                console.error('Failed to parse user from localStorage:', error);
+            }
         }
+
+        setAuth({
+            user: null,
+            token: null,
+            isLoading: false
+        });
     } , []);
 
     async function logout() {
