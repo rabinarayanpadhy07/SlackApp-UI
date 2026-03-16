@@ -11,6 +11,8 @@ import { useGetChannelMessages } from '@/hooks/apis/channels/useGetChannelMessag
 import { useChannelMessages } from '@/hooks/context/useChannelMessages';
 import { useSocket } from '@/hooks/context/useSocket';
 
+import { useAuth } from '@/hooks/context/useAuth';
+
 export const Channel = () => {
 
     const { channelId } = useParams();
@@ -20,11 +22,13 @@ export const Channel = () => {
     const { channelDetails, isFetching, isError } = useGetChannelById(channelId);
     const { setMessageList, messageList } = useChannelMessages();
 
-    const { joinChannel } = useSocket();
+    const { joinChannel, socket } = useSocket();
 
     const { messages, isSuccess } = useGetChannelMessages(channelId);
 
     const messageContainerListRef = useRef(null);
+
+    const { auth } = useAuth(); // Needed to pass the memberId
 
     useEffect(() => {
         if(messageContainerListRef.current) {
@@ -51,6 +55,19 @@ export const Channel = () => {
             setMessageList(messages.reverse());
         }
     }, [isSuccess, messages, setMessageList, channelId]);
+
+    const handleReaction = (messageId, emoji) => {
+        if (!socket || !auth?.user?._id) return;
+
+        socket.emit('ADD_REACTION', {
+            messageId,
+            emoji,
+            memberId: auth.user._id,
+            channelId
+        }, (response) => {
+            console.log('Reaction response:', response);
+        });
+    };
 
     if(isFetching) {
         return (
@@ -81,7 +98,19 @@ export const Channel = () => {
                 className='flex-5 overflow-y-auto p-5 gap-y-2'
             >
                 {messageList?.map((message) => {
-                    return <Message key={message._id} body={message.body} authorImage={message.senderId?.avatar} authorName={message.senderId?.username} createdAt={message.createdAt} image={message.image}   />;
+                    return (
+                        <Message 
+                            key={message._id} 
+                            messageId={message._id}
+                            body={message.body} 
+                            authorImage={message.senderId?.avatar} 
+                            authorName={message.senderId?.username} 
+                            createdAt={message.createdAt} 
+                            image={message.image}
+                            reactions={message.reactions || []}
+                            onAddReaction={handleReaction}
+                        />
+                    );
                 })}   
             </div>         
 

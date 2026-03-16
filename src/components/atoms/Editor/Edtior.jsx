@@ -49,6 +49,7 @@ export const Editor = ({
                     ['bold', 'italic', 'underline', 'strike'],
                     ['link'],
                     [{ list: 'ordered' }, { list: 'bullet' }],
+                    ['blockquote', 'code-block'],
                     ['clean']
                 ],
                 keyboard: {
@@ -77,6 +78,12 @@ export const Editor = ({
         quillRef.current.focus();
 
         quill.setContents(defaultValueRef.current);
+
+        // Hide toolbar on initial load
+        const toolbar = container.querySelector('.ql-toolbar');
+        if (toolbar) {
+            toolbar.classList.add('hidden');
+        }
 
     }, []);
 

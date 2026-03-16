@@ -14,7 +14,18 @@ export const SocketContextProvider = ({ children }) => {
 
     socket.on('NewMessageReceived', (data) => {
         console.log('New message received', data);
-        setMessageList([...messageList, data]);
+        if (!data.parentMessage) {
+            setMessageList((prev) => [...prev, data]);
+        }
+    });
+
+    socket.on('REACTION_ADDED', (updatedMessage) => {
+        console.log('Reaction added/updated:', updatedMessage);
+        setMessageList((prev) => 
+            prev.map((msg) => 
+                msg._id === updatedMessage._id ? updatedMessage : msg
+            )
+        );
     });
 
     async function joinChannel(channelId) {
