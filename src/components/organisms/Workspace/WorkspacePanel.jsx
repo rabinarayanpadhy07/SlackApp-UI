@@ -49,13 +49,13 @@ export const WorkspacePanel = () => {
                 <SideBarItem 
                     label="Threads"
                     icon={MessageSquareTextIcon}
-                    id="threads"
+                    to={`/workspaces/${workspaceId}/threads`}
                     variant='active'
                 />
                 <SideBarItem 
                     label="Drafts & Sends"
                     icon={SendHorizonalIcon}
-                    id="drafts"
+                    to={`/workspaces/${workspaceId}/drafts`}
                     variant='default'
                 />
             </div>
@@ -74,7 +74,9 @@ export const WorkspacePanel = () => {
                 onIconClick={() => {}}
             >
                 {workspace?.members?.map((item) => {
-                    return <UserItem key={item.memberId._id} label={item.memberId.username} id={item.memberId._id} image={item.memberId.avatar} />;
+                    const memberId = item.memberId;
+                    if (!memberId) return null;
+                    return <UserItem key={memberId._id} label={memberId.username} id={memberId._id} image={memberId.avatar} />;
                 })}
             </WorkspacePanelSection>
         </div>

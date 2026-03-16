@@ -8,6 +8,9 @@ import { Home } from '@/pages/Home/Home';
 import { Notfound } from '@/pages/Notfound/Notfound';
 
 import { Channel } from './pages/Workspace/Channel/Channel';
+import { DirectMessage } from './pages/Workspace/DirectMessage/DirectMessage';
+import { Drafts } from './pages/Workspace/Drafts/Drafts';
+import { Threads } from './pages/Workspace/Threads/Threads';
 import { JoinPage } from './pages/Workspace/JoinPage';
 import { WorkspaceLayout } from './pages/Workspace/Layout';
 import { Payments } from './pages/Payments/Payments';
@@ -22,6 +25,15 @@ export const AppRoutes = () => {
           <Route 
             path="/workspaces/:workspaceId/channels/:channelId"
             element={<ProtectedRoute><WorkspaceLayout><Channel /></WorkspaceLayout></ProtectedRoute>} />
+          <Route 
+            path="/workspaces/:workspaceId/threads"
+            element={<ProtectedRoute><WorkspaceLayout><Threads /></WorkspaceLayout></ProtectedRoute>} />
+          <Route 
+            path="/workspaces/:workspaceId/drafts"
+            element={<ProtectedRoute><WorkspaceLayout><Drafts /></WorkspaceLayout></ProtectedRoute>} />
+          <Route 
+            path="/workspaces/:workspaceId/members/:memberId"
+            element={<ProtectedRoute><WorkspaceLayout><DirectMessage /></WorkspaceLayout></ProtectedRoute>} />
            <Route path="/makepayment" element={<ProtectedRoute><Payments /></ProtectedRoute>} />
           <Route path="/workspaces/join/:workspaceId" element={<JoinPage />} />
           <Route path="/*" element={<Notfound />} />

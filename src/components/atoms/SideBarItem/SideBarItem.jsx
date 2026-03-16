@@ -22,11 +22,14 @@ export const SideBarItem = ({
     label,
     id, // channelId
     icon: Icon,
-    variant
+    variant,
+    to
 }) => {
 
 
     const {workspaceId} = useParams();
+
+    const href = to || `/workspaces/${workspaceId}/channels/${id}`;
 
     return (
         <Button
@@ -36,7 +39,7 @@ export const SideBarItem = ({
         >
             <Link
             className='flex items-center gap-1.5'
-                to={`/workspaces/${workspaceId}/channels/${id}`}
+                to={href}
             >
                 <Icon className='size-3.5 mr-1' />
                 <span className='text-sm' >{label}</span>

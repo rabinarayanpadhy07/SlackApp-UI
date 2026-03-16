@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback,AvatarImage } from '@/components/ui/avatar';
 
 export const Message = ({
     authorImage,
-    authorName,
+    authorName = 'User',
     createdAt,
     body,
     image
@@ -24,7 +24,7 @@ export const Message = ({
                         <AvatarFallback
                             className="rounded-md bg-sky-500 text-white text-sm"
                         >
-                            {authorName.charAt(0).toUpperCase()}
+                            {authorName ? authorName.charAt(0).toUpperCase() : 'U'}
                         </AvatarFallback>
                     </Avatar>
                 </button>

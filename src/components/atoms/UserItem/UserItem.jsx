@@ -26,8 +26,12 @@ export const UserItem = ({
     image,
     variant
 }) => {
-    console.log('incoming label', label);
-    const { workspace } = useCurrentWorkspace();
+    const { currentWorkspace } = useCurrentWorkspace();
+    const workspaceId = currentWorkspace?._id;
+
+    if (!workspaceId) {
+        return null;
+    }
 
     return (
         <Button
@@ -36,7 +40,7 @@ export const UserItem = ({
             size="sm"
             asChild
         >
-            <Link to={`/workspace/${workspace?._id}/members/${id}`}>
+            <Link to={`/workspaces/${workspaceId}/members/${id}`}>
                 <Avatar>
                     <AvatarImage src={image} className='rounded-md' />
                     <AvatarFallback

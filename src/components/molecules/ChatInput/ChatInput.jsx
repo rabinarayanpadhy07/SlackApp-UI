@@ -5,14 +5,20 @@ import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useSocket } from '@/hooks/context/useSocket';
 import { useQueryClient } from '@tanstack/react-query';
 
-export const ChatInput = () => {
+export const ChatInput = ({ onSubmit }) => {
 
     const { socket, currentChannel } = useSocket();
     const { auth } = useAuth();
     const { currentWorkspace } = useCurrentWorkspace();
     const queryClient = useQueryClient();
 
-    async function handleSubmit({ body, image }) {
+    async function handleSubmit(payload) {
+        if (onSubmit) {
+            await onSubmit(payload);
+            return;
+        }
+
+        const { body, image } = payload;
         console.log(body, image);
         let fileUrl = null;
         if(image) {
