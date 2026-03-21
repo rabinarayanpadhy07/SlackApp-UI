@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 import { ChannelHeader } from '@/components/molecules/Channel/ChannelHeader';
 import { ChatInput } from '@/components/molecules/ChatInput/ChatInput';
 import { Message } from '@/components/molecules/Message/Message';
+import { TypingIndicator } from '@/components/molecules/TypingIndicator/TypingIndicator';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useGetDirectMessages } from '@/hooks/apis/direct-messages/useGetDirectMessages';
@@ -82,6 +83,8 @@ export const DirectMessage = () => {
                     [...messages].reverse().map((message) => (
                         <Message
                             key={message._id}
+                            messageId={message._id}
+                            authorId={message.senderId?._id}
                             body={message.body}
                             authorImage={message.senderId?.avatar}
                             authorName={message.senderId?.username}
@@ -93,6 +96,7 @@ export const DirectMessage = () => {
             </div>
 
             <div className='flex-1' />
+            <TypingIndicator />
             <ChatInput
                 onSubmit={async ({ body, image }) => {
                     if (!body && !image) return;

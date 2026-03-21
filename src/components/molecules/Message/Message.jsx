@@ -11,11 +11,13 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useThread } from '@/context/ThreadContext';
+import { useSocket } from '@/hooks/context/useSocket';
 
 const COMMON_EMOJIS = ['👍', '❤️', '😂', '🔥', '👀'];
 
 export const Message = ({
     messageId,
+    authorId,
     authorImage,
     authorName = 'User',
     createdAt,
@@ -26,6 +28,9 @@ export const Message = ({
     isReply = false
 }) => {
     const { openThread } = useThread();
+    const { onlineUsers } = useSocket();
+
+    const isOnline = onlineUsers?.includes(authorId);
 
     // Group reactions by emoji
     const reactionCounts = reactions.reduce((acc, current) => {
@@ -88,7 +93,7 @@ export const Message = ({
                 className="flex items-start gap-2"
             >
 
-                <button>
+                <button className="relative shrink-0">
                     <Avatar>
                         <AvatarImage  className="rounded-md"  src={authorImage} />
                         <AvatarFallback
@@ -97,6 +102,9 @@ export const Message = ({
                             {authorName ? authorName.charAt(0).toUpperCase() : 'U'}
                         </AvatarFallback>
                     </Avatar>
+                    {isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full z-10 box-content shadow-sm" />
+                    )}
                 </button>
 
                 <div

@@ -23,7 +23,8 @@ export const SideBarItem = ({
     id, // channelId
     icon: Icon,
     variant,
-    to
+    to,
+    unreadCount
 }) => {
 
 
@@ -38,11 +39,16 @@ export const SideBarItem = ({
             className={cn(sideBarItemVariants({variant}))}
         >
             <Link
-            className='flex items-center gap-1.5'
+                className='flex items-center gap-1.5 w-full'
                 to={href}
             >
-                <Icon className='size-3.5 mr-1' />
-                <span className='text-sm' >{label}</span>
+                <Icon className='size-3.5 mr-1 shrink-0' />
+                <span className={cn('text-sm flex-1 truncate text-left', unreadCount > 0 && 'font-bold text-white')} >{label}</span>
+                {unreadCount > 0 && (
+                    <span className="text-[10px] bg-red-500 text-white rounded-full px-1.5 py-0.5 ml-auto font-bold shrink-0 leading-none">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                )}
             </Link>
         </Button>
     );

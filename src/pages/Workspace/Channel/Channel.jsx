@@ -6,16 +6,18 @@ import { useParams } from 'react-router-dom';
 import { ChannelHeader } from '@/components/molecules/Channel/ChannelHeader';
 import { ChatInput } from '@/components/molecules/ChatInput/ChatInput';
 import { Message } from '@/components/molecules/Message/Message';
+import { TypingIndicator } from '@/components/molecules/TypingIndicator/TypingIndicator';
 import { useGetChannelById } from '@/hooks/apis/channels/useGetChannelById';
 import { useGetChannelMessages } from '@/hooks/apis/channels/useGetChannelMessages';
 import { useChannelMessages } from '@/hooks/context/useChannelMessages';
 import { useSocket } from '@/hooks/context/useSocket';
+import { useMarkChannelAsRead } from '@/hooks/apis/read-receipts/useMarkChannelAsRead';
 
 import { useAuth } from '@/hooks/context/useAuth';
 
 export const Channel = () => {
 
-    const { channelId } = useParams();
+    const { workspaceId, channelId } = useParams();
 
     const queryClient = useQueryClient();
 
@@ -25,6 +27,8 @@ export const Channel = () => {
     const { joinChannel, socket } = useSocket();
 
     const { messages, isSuccess } = useGetChannelMessages(channelId);
+    
+    const { markAsRead } = useMarkChannelAsRead();
 
     const messageContainerListRef = useRef(null);
 
@@ -43,11 +47,12 @@ export const Channel = () => {
 
     useEffect(() => {
         if(!isFetching && !isError) {
-            
             joinChannel(channelId);
-
+            if (workspaceId) {
+                markAsRead({ channelId, workspaceId });
+            }
         }
-    }, [isFetching, isError, joinChannel, channelId]);
+    }, [isFetching, isError, joinChannel, channelId, workspaceId, markAsRead]);
 
     useEffect(() => {
         if(isSuccess ) {
@@ -102,6 +107,7 @@ export const Channel = () => {
                         <Message 
                             key={message._id} 
                             messageId={message._id}
+                            authorId={message.senderId?._id}
                             body={message.body} 
                             authorImage={message.senderId?.avatar} 
                             authorName={message.senderId?.username} 
@@ -116,6 +122,7 @@ export const Channel = () => {
 
             
             <div className='flex-1' /> 
+            <TypingIndicator />
             <ChatInput />
         </div>
     );

@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { getPreginedUrl, uploadImageToAWSpresignedUrl } from '@/apis/s3';
 import { Editor } from '@/components/atoms/Editor/Edtior';
 import { useAuth } from '@/hooks/context/useAuth';
@@ -11,6 +12,28 @@ export const ChatInput = ({ onSubmit }) => {
     const { auth } = useAuth();
     const { currentWorkspace } = useCurrentWorkspace();
     const queryClient = useQueryClient();
+    const typingTimeoutRef = useRef(null);
+
+    function handleTextChange() {
+        if (!socket || !currentChannel || !auth?.user?.username) return;
+
+        if (typingTimeoutRef.current) {
+            clearTimeout(typingTimeoutRef.current);
+        } else {
+            socket.emit('typing_start', {
+                channelId: currentChannel,
+                username: auth.user.username
+            });
+        }
+
+        typingTimeoutRef.current = setTimeout(() => {
+            socket.emit('typing_stop', {
+                channelId: currentChannel,
+                username: auth.user.username
+            });
+            typingTimeoutRef.current = null;
+        }, 2000);
+    }
 
     async function handleSubmit(payload) {
         if (onSubmit) {
@@ -54,6 +77,7 @@ export const ChatInput = ({ onSubmit }) => {
             <Editor 
                 placeholder="Type a message..."
                 onSubmit={handleSubmit}
+                onTextChange={handleTextChange}
                 onCancel={() => {}}
                 disabled={false}
                 defaultValue=""

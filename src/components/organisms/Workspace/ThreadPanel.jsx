@@ -105,6 +105,7 @@ export const ThreadPanel = () => {
                     <Message 
                         key={message._id} 
                         messageId={message._id}
+                        authorId={message.senderId?._id}
                         body={message.body} 
                         authorImage={message.senderId?.avatar} 
                         authorName={message.senderId?.username} 

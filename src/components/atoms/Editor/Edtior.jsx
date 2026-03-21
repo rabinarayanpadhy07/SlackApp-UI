@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Hint } from '../Hint/Hint';
 export const Editor = ({
     // variant = 'create',
-    onSubmit
+    onSubmit,
+    onTextChange
     // onCancel,
     // placeholder,
     // defaultValue
@@ -25,6 +26,11 @@ export const Editor = ({
     const defaultValueRef = useRef();
     const quillRef = useRef();
     const imageInputRef = useRef(null);
+    const onTextChangeRef = useRef(onTextChange);
+
+    useEffect(() => {
+        onTextChangeRef.current = onTextChange;
+    }, [onTextChange]);
 
     function toggleToolbar() {
         setIsToolbarVisible(!isToolbarVisible);
@@ -78,6 +84,12 @@ export const Editor = ({
         quillRef.current.focus();
 
         quill.setContents(defaultValueRef.current);
+
+        quill.on('text-change', () => {
+            if (onTextChangeRef.current) {
+                onTextChangeRef.current();
+            }
+        });
 
         // Hide toolbar on initial load
         const toolbar = container.querySelector('.ql-toolbar');

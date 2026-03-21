@@ -7,6 +7,7 @@ import { WorkspacePanelHeader } from '@/components/molecules/Workspace/Workspace
 import { WorkspacePanelSection } from '@/components/molecules/Workspace/WorkspacePanelSection';
 import { useGetWorkspaceById } from '@/hooks/apis/workspaces/useGetWorkspaceById';
 import { useCreateChannelModal } from '@/hooks/context/useCreateChannelModal';
+import { useGetUnreadChannels } from '@/hooks/apis/read-receipts/useGetUnreadChannels';
 
 export const WorkspacePanel = () => {
 
@@ -14,6 +15,7 @@ export const WorkspacePanel = () => {
 
     const { setOpenCreateChannelModal } = useCreateChannelModal();
     const { workspace, isFetching, isSuccess } = useGetWorkspaceById(workspaceId);
+    const { unreadMap } = useGetUnreadChannels(workspaceId);
 
     if(isFetching) {
 
@@ -65,7 +67,13 @@ export const WorkspacePanel = () => {
                 onIconClick={() => {setOpenCreateChannelModal(true);}}
             >
                 {workspace?.channels?.map((channel) => {
-                    return <SideBarItem key={channel._id} icon={HashIcon} label={channel.name} id={channel._id} />;
+                    return <SideBarItem 
+                        key={channel._id} 
+                        icon={HashIcon} 
+                        label={channel.name} 
+                        id={channel._id} 
+                        unreadCount={unreadMap?.[channel._id] || 0}
+                    />;
                 })}
             </WorkspacePanelSection>
 
