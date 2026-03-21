@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Loader2Icon, TriangleAlertIcon } from 'lucide-react';
+import { Loader2Icon, TriangleAlertIcon, Pin } from 'lucide-react';
 import { useEffect, useRef} from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -93,9 +93,27 @@ export const Channel = () => {
         );
     }
 
+    const pinnedMessages = messageList?.filter(m => m.isPinned && !m.deletedAt) || [];
+
     return (
         <div className='flex flex-col h-full'>
             <ChannelHeader name={channelDetails?.name} />
+
+            {pinnedMessages.length > 0 && (
+                <div className="bg-white border-b px-5 py-2 shadow-[0_2px_4px_rgba(0,0,0,0.02)] z-10 max-h-[20vh] overflow-y-auto w-full">
+                    <div className="text-[11px] font-bold text-slate-500 mb-2 flex items-center gap-1 uppercase tracking-wider">
+                        <Pin className="h-3 w-3" /> {pinnedMessages.length} Pinned {pinnedMessages.length === 1 ? 'Message' : 'Messages'}
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                        {pinnedMessages.map((msg) => (
+                            <div key={`pin-${msg._id}`} className="text-sm px-3 py-2 bg-yellow-50/80 rounded-md border border-yellow-200/60 flex flex-col gap-0.5 hover:bg-yellow-100/50 transition-colors">
+                                <span className="font-semibold text-xs text-slate-800">{msg.senderId?.username}</span>
+                                <div className="text-slate-600 text-[11px] line-clamp-2 leading-relaxed" dangerouslySetInnerHTML={{ __html: msg.body }} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* We need to make sure that below div is scrollable for the messages */}
             <div
@@ -115,6 +133,10 @@ export const Channel = () => {
                             image={message.image}
                             reactions={message.reactions || []}
                             onAddReaction={handleReaction}
+                            isEdited={message.isEdited}
+                            deletedAt={message.deletedAt}
+                            isPinned={message.isPinned}
+                            stars={message.stars}
                         />
                     );
                 })}   

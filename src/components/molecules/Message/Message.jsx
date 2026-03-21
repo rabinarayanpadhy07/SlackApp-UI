@@ -3,7 +3,11 @@ import { MessageRenderer } from '@/components/atoms/MessageRenderer/MessageRende
 import { Avatar, AvatarFallback,AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Hint } from '@/components/atoms/Hint/Hint';
-import { SmilePlus, MessageSquareText, MoreHorizontal } from 'lucide-react';
+import { SmilePlus, MessageSquareText, MoreHorizontal, Pin, Trash, Edit, Star, StarOff, PinOff } from 'lucide-react';
+import { useState } from 'react';
+import { useAuth } from '@/hooks/context/useAuth';
+import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
+import { Editor } from '@/components/atoms/Editor/Edtior';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,12 +29,41 @@ export const Message = ({
     image,
     reactions = [],
     onAddReaction,
-    isReply = false
+    isReply = false,
+    isEdited = false,
+    deletedAt = null,
+    isPinned = false,
+    stars = []
 }) => {
     const { openThread } = useThread();
-    const { onlineUsers } = useSocket();
+    const { onlineUsers, socket, currentChannel } = useSocket();
+    const { auth } = useAuth();
+    const { currentWorkspace } = useCurrentWorkspace();
+    
+    const [isEditing, setIsEditing] = useState(false);
 
     const isOnline = onlineUsers?.includes(authorId);
+
+    const isAuthor = auth?.user?._id === authorId;
+    const isWorkspaceAdmin = currentWorkspace?.members?.find(
+        (m) => (m.memberId && m.memberId._id ? m.memberId._id === auth?.user?._id : m.memberId === auth?.user?._id) && m.role === 'admin'
+    );
+    const isStarred = stars?.includes(auth?.user?._id);
+
+    const handleEditSubmit = ({ body }) => {
+        socket.emit('EDIT_MESSAGE', { messageId, body, memberId: auth?.user?._id, channelId: currentChannel }, (res) => {
+             if(res?.success) setIsEditing(false);
+        });
+    };
+    const handleDelete = () => {
+        socket.emit('DELETE_MESSAGE', { messageId, memberId: auth?.user?._id, channelId: currentChannel });
+    };
+    const handleTogglePin = () => {
+        socket.emit('TOGGLE_PIN_MESSAGE', { messageId, memberId: auth?.user?._id, channelId: currentChannel });
+    };
+    const handleToggleStar = () => {
+        socket.emit('TOGGLE_STAR_MESSAGE', { messageId, memberId: auth?.user?._id, channelId: currentChannel });
+    };
 
     // Group reactions by emoji
     const reactionCounts = reactions.reduce((acc, current) => {
@@ -45,6 +78,7 @@ export const Message = ({
         >
 
             {/* Hover Action Bar */}
+            {!deletedAt && !isEditing && (
             <div className="absolute top-2 right-5 opacity-0 group-hover:opacity-100 transition-opacity bg-white border rounded-md shadow-sm z-10 flex items-center">
                 
                 <DropdownMenu>
@@ -82,12 +116,41 @@ export const Message = ({
                         </Button>
                     </Hint>
                 )}
+                
+                {isAuthor && (
+                    <Hint label="Edit Message">
+                        <Button variant="ghost" size="iconSm" onClick={() => setIsEditing(true)} className="h-8 w-8 text-slate-500 hover:text-slate-800">
+                            <Edit className="h-4 w-4" />
+                        </Button>
+                    </Hint>
+                )}
+                {(isAuthor || isWorkspaceAdmin) && (
+                    <Hint label="Delete Message">
+                        <Button variant="ghost" size="iconSm" onClick={handleDelete} className="h-8 w-8 text-rose-500 hover:text-rose-800">
+                            <Trash className="h-4 w-4" />
+                        </Button>
+                    </Hint>
+                )}
+                <Hint label={isStarred ? "Unstar Message" : "Star Message"}>
+                    <Button variant="ghost" size="iconSm" onClick={handleToggleStar} className={`h-8 w-8 ${isStarred ? 'text-yellow-500 hover:text-yellow-600' : 'text-slate-500 hover:text-slate-800'}`}>
+                        {isStarred ? <Star className="h-4 w-4 fill-yellow-500" /> : <Star className="h-4 w-4" />}
+                    </Button>
+                </Hint>
+                {isWorkspaceAdmin && (
+                    <Hint label={isPinned ? "Unpin Message" : "Pin Message"}>
+                        <Button variant="ghost" size="iconSm" onClick={handleTogglePin} className="h-8 w-8 text-slate-500 hover:text-slate-800">
+                            {isPinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+                        </Button>
+                    </Hint>
+                )}
+
                 <Hint label="More options">
                     <Button variant="ghost" size="iconSm" className="h-8 w-8 text-slate-500 hover:text-slate-800">
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
                 </Hint>
             </div>
+            )}
 
             <div
                 className="flex items-start gap-2"
@@ -110,6 +173,11 @@ export const Message = ({
                 <div
                     className='flex flex-col w-full overflow-hidden'
                 >
+                    {isPinned && (
+                        <div className="text-[11px] text-muted-foreground flex items-center gap-1 mb-1 font-medium">
+                            <Pin className="h-3 w-3" /> Pinned
+                        </div>
+                    )}
                     <div
                         className='text-xs'
                     >
@@ -122,14 +190,32 @@ export const Message = ({
                         >
                             {createdAt || 'Just now'}
                         </button>
+                        {isEdited && !deletedAt && <span className="text-[10px] text-muted-foreground ml-2">(edited)</span>}
+                        {isStarred && !deletedAt && <Star className="h-3 w-3 inline text-yellow-500 ml-2 fill-yellow-500" />}
                     </div>
 
-                    <MessageRenderer value={body} />
-                    {/* Any images if there are */}
-                    {image && <MessageImageThumbnail url={image} />}
+                    {deletedAt ? (
+                        <div className="text-sm italic text-slate-500 mt-1">This message was deleted.</div>
+                    ) : isEditing ? (
+                        <div className="w-full mt-2">
+                            <Editor 
+                                variant="update"
+                                onSubmit={handleEditSubmit} 
+                                onCancel={() => setIsEditing(false)} 
+                                defaultValue={body} 
+                                workspaceMembers={currentWorkspace?.members} 
+                                workspaceChannels={currentWorkspace?.channels} 
+                            />
+                        </div>
+                    ) : (
+                        <>
+                            <MessageRenderer value={body} />
+                            {image && <MessageImageThumbnail url={image} />}
+                        </>
+                    )}
 
                     {/* Reactions Display */}
-                    {Object.keys(reactionCounts).length > 0 && (
+                    {!deletedAt && Object.keys(reactionCounts).length > 0 && (
                         <div className="flex items-center gap-1 mt-1">
                             {Object.entries(reactionCounts).map(([emoji, count]) => (
                                 <button

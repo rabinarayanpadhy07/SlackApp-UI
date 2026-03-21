@@ -114,6 +114,10 @@ export const ThreadPanel = () => {
                         reactions={message.reactions || []}
                         // Disable replying to a reply to keep threads 1-level deep
                         isReply={true} 
+                        isEdited={message.isEdited}
+                        deletedAt={message.deletedAt}
+                        isPinned={message.isPinned}
+                        stars={message.stars}
                     />
                 ))}
 

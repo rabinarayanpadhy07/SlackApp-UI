@@ -12,14 +12,14 @@ import { Button } from '@/components/ui/button';
 
 import { Hint } from '../Hint/Hint';
 export const Editor = ({
-    // variant = 'create',
+    variant = 'create',
     onSubmit,
     onTextChange,
     workspaceMembers = [],
-    workspaceChannels = []
-    // onCancel,
-    // placeholder,
-    // defaultValue
+    workspaceChannels = [],
+    onCancel,
+    placeholder,
+    defaultValue
 }) => {
 
     const [isToolbarVisible, setIsToolbarVisible] = useState(false);
@@ -27,7 +27,7 @@ export const Editor = ({
     const [image, setImage] = useState(null);
 
     const containerRef = useRef(); // reqd to initialize the editor
-    const defaultValueRef = useRef();
+    const defaultValueRef = useRef(defaultValue ? JSON.parse(defaultValue) : []);
     const quillRef = useRef();
     const imageInputRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
@@ -190,33 +190,40 @@ export const Editor = ({
                         onChange={(e) => setImage(e.target.files[0])}
                     />
 
-                    <Hint label="Send Message">
-                        <Button
-                            size="iconSm"
-                            className="ml-auto bg-[#007a6a] hover:bg-[#007a6a]/80 text-white"
-                            onClick={() => {
-                                const contents = quillRef.current?.getContents();
-                                const messageContent = JSON.stringify(contents);
-                                
-                                const mentions = [];
-                                contents?.ops?.forEach(op => {
-                                    if (op.insert && op.insert.mention) {
-                                        if (op.insert.mention.denotationChar === '@') {
-                                            mentions.push(op.insert.mention.id);
+                    <div className="ml-auto flex items-center gap-2">
+                        {variant === 'update' && (
+                            <Button variant="outline" size="sm" onClick={onCancel}>
+                                Cancel
+                            </Button>
+                        )}
+                        <Hint label="Send Message">
+                            <Button
+                                size={variant === 'update' ? 'sm' : 'iconSm'}
+                                className="bg-[#007a6a] hover:bg-[#007a6a]/80 text-white"
+                                onClick={() => {
+                                    const contents = quillRef.current?.getContents();
+                                    const messageContent = JSON.stringify(contents);
+                                    
+                                    const mentions = [];
+                                    contents?.ops?.forEach(op => {
+                                        if (op.insert && op.insert.mention) {
+                                            if (op.insert.mention.denotationChar === '@') {
+                                                mentions.push(op.insert.mention.id);
+                                            }
                                         }
-                                    }
-                                });
+                                    });
 
-                                onSubmit({ body: messageContent, image, mentions });
-                                quillRef.current?.setText('');
-                                setImage(null);
-                                imageInputRef.current.value = '';
-                            }}
-                            disabled={false}
-                        >
-                            <MdSend className='size-4' />
-                        </Button>
-                    </Hint>
+                                    onSubmit({ body: messageContent, image, mentions });
+                                    quillRef.current?.setText('');
+                                    setImage(null);
+                                    imageInputRef.current.value = '';
+                                }}
+                                disabled={false}
+                            >
+                                {variant === 'update' ? 'Save' : <MdSend className='size-4' />}
+                            </Button>
+                        </Hint>
+                    </div>
                 </div>
             </div>
 

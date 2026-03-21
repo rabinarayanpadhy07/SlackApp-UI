@@ -52,8 +52,8 @@ export const SocketContextProvider = ({ children }) => {
             }
         };
 
-        const handleReaction = (updatedMessage) => {
-            console.log('Reaction added/updated:', updatedMessage);
+        const handleMessageMutation = (updatedMessage) => {
+            console.log('Message mutated/updated:', updatedMessage);
             setMessageList((prev) => 
                 prev.map((msg) => 
                     msg._id === updatedMessage._id ? updatedMessage : msg
@@ -95,7 +95,14 @@ export const SocketContextProvider = ({ children }) => {
         };
 
         socket.on('NewMessageReceived', handleNewMessage);
-        socket.on('REACTION_ADDED', handleReaction);
+        socket.on('REACTION_ADDED', handleMessageMutation);
+        socket.on('MESSAGE_EDITED', handleMessageMutation);
+        socket.on('MESSAGE_DELETED', handleMessageMutation);
+        socket.on('MESSAGE_PINNED', handleMessageMutation);
+        socket.on('MESSAGE_UNPINNED', handleMessageMutation);
+        socket.on('MESSAGE_STARRED', handleMessageMutation);
+        socket.on('MESSAGE_UNSTARRED', handleMessageMutation);
+        
         socket.on('user_typing_start', handleTypingStart);
         socket.on('user_typing_stop', handleTypingStop);
         socket.on('active_users_list', handleActiveUsers);
@@ -109,7 +116,14 @@ export const SocketContextProvider = ({ children }) => {
 
         return () => {
             socket.off('NewMessageReceived', handleNewMessage);
-            socket.off('REACTION_ADDED', handleReaction);
+            socket.off('REACTION_ADDED', handleMessageMutation);
+            socket.off('MESSAGE_EDITED', handleMessageMutation);
+            socket.off('MESSAGE_DELETED', handleMessageMutation);
+            socket.off('MESSAGE_PINNED', handleMessageMutation);
+            socket.off('MESSAGE_UNPINNED', handleMessageMutation);
+            socket.off('MESSAGE_STARRED', handleMessageMutation);
+            socket.off('MESSAGE_UNSTARRED', handleMessageMutation);
+
             socket.off('user_typing_start', handleTypingStart);
             socket.off('user_typing_stop', handleTypingStop);
             socket.off('active_users_list', handleActiveUsers);
