@@ -6,6 +6,7 @@ import { SignupContainer } from '@/components/organisms/Auth/SignupContainer';
 import { Auth } from '@/pages/Auth/Auth';
 import { Home } from '@/pages/Home/Home';
 import { Notfound } from '@/pages/Notfound/Notfound';
+import { GoogleAuthSuccess } from '@/pages/Auth/GoogleAuthSuccess';
 
 import { Channel } from './pages/Workspace/Channel/Channel';
 import { DirectMessage } from './pages/Workspace/DirectMessage/DirectMessage';
@@ -20,6 +21,7 @@ export const AppRoutes = () => {
         <Routes>
           <Route path="/auth/signup" element={<Auth><SignupContainer /></Auth>} />
           <Route path="/auth/signin" element={<Auth><SigninContainer /></Auth>} />
+          <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/workspaces/:workspaceId" element={<ProtectedRoute><WorkspaceLayout>Workspace</WorkspaceLayout></ProtectedRoute>} />
           <Route 

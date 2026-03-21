@@ -1,5 +1,6 @@
 import { LucideLoader2, TriangleAlert } from 'lucide-react';
 import { FaCheck } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -94,6 +95,21 @@ export const SignupCard = ({
                 </form>
 
                 <Separator className="my-5" />
+
+                <div className="flex flex-col gap-y-2.5">
+                    <Button
+                        className="w-full relative"
+                        disabled={isPending}
+                        onClick={() => {
+                            window.location.href = 'http://localhost:3000/api/v1/users/google';
+                        }}
+                        variant="outline"
+                        size="lg"
+                    >
+                        <FcGoogle className="size-5 absolute left-2.5 top-2.5" />
+                        Continue with Google
+                    </Button>
+                </div>
 
                 <p
                     className='text-s text-muted-foreground mt-4'
