@@ -1,4 +1,6 @@
 import 'quill/dist/quill.snow.css'; // ES6
+import 'quill-mention/autoregister';
+import 'quill-mention/dist/quill.mention.css';
 
 import { ImageIcon, XIcon } from 'lucide-react';
 import Quill from 'quill';
@@ -12,7 +14,9 @@ import { Hint } from '../Hint/Hint';
 export const Editor = ({
     // variant = 'create',
     onSubmit,
-    onTextChange
+    onTextChange,
+    workspaceMembers = [],
+    workspaceChannels = []
     // onCancel,
     // placeholder,
     // defaultValue
@@ -51,6 +55,29 @@ export const Editor = ({
         const options = {
             theme: 'snow',
             modules: {
+                mention: {
+                    allowedChars: /^[A-Za-z0-9_\s]*$/,
+                    mentionDenotationChars: ["@", "#"],
+                    mentionContainer: document.body,
+                    source: function (searchTerm, renderList, mentionChar) {
+                        let values;
+
+                        if (mentionChar === "@") {
+                            values = workspaceMembers.map(m => ({ id: m.memberId?._id, value: m.memberId?.username })).filter(m => m.id);
+                        } else {
+                            values = workspaceChannels.map(c => ({ id: c._id, value: c.name }));
+                        }
+
+                        if (searchTerm.length === 0) {
+                            renderList(values, searchTerm);
+                        } else {
+                            const matches = [];
+                            for (let i = 0; i < values.length; i++)
+                                if (~values[i].value.toLowerCase().indexOf(searchTerm.toLowerCase())) matches.push(values[i]);
+                            renderList(matches, searchTerm);
+                        }
+                    },
+                },
                 toolbar: [
                     ['bold', 'italic', 'underline', 'strike'],
                     ['link'],
@@ -106,7 +133,7 @@ export const Editor = ({
         >
 
             <div
-                className='flex flex-col border border-slate-300 rounded-md overflow-hidden focus-within:shadow-sm focus-within:border-slate-400 bg-white '
+                className='flex flex-col border border-slate-300 rounded-md focus-within:shadow-sm focus-within:border-slate-400 bg-white relative'
             >
                 <div className='h-full ql-custom' ref={containerRef} />
                 {
@@ -168,8 +195,19 @@ export const Editor = ({
                             size="iconSm"
                             className="ml-auto bg-[#007a6a] hover:bg-[#007a6a]/80 text-white"
                             onClick={() => {
-                                const messageContent = JSON.stringify(quillRef.current?.getContents());
-                                onSubmit({ body: messageContent, image });
+                                const contents = quillRef.current?.getContents();
+                                const messageContent = JSON.stringify(contents);
+                                
+                                const mentions = [];
+                                contents?.ops?.forEach(op => {
+                                    if (op.insert && op.insert.mention) {
+                                        if (op.insert.mention.denotationChar === '@') {
+                                            mentions.push(op.insert.mention.id);
+                                        }
+                                    }
+                                });
+
+                                onSubmit({ body: messageContent, image, mentions });
                                 quillRef.current?.setText('');
                                 setImage(null);
                                 imageInputRef.current.value = '';

@@ -64,7 +64,8 @@ export const ChatInput = ({ onSubmit }) => {
             body,
             image: fileUrl,
             senderId: auth?.user?._id,
-            workspaceId: currentWorkspace?._id
+            workspaceId: currentWorkspace?._id,
+            mentions: payload.mentions || []
         }, (data) => {
             console.log('Message sent', data);
         });
@@ -81,7 +82,8 @@ export const ChatInput = ({ onSubmit }) => {
                 onCancel={() => {}}
                 disabled={false}
                 defaultValue=""
-                
+                workspaceMembers={currentWorkspace?.members || []}
+                workspaceChannels={currentWorkspace?.channels || []}
             />
 
             

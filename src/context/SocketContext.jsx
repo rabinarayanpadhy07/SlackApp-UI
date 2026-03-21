@@ -86,12 +86,21 @@ export const SocketContextProvider = ({ children }) => {
             });
         };
 
-        socket.on('new message', handleNewMessage);
+        const handleMentionReceived = (data) => {
+            console.log('Mention received:', data);
+            toast({
+                title: `Mentioned by ${data.message.senderId?.username}`,
+                description: `You were mentioned in a recent message.`,
+            });
+        };
+
+        socket.on('NewMessageReceived', handleNewMessage);
         socket.on('REACTION_ADDED', handleReaction);
         socket.on('user_typing_start', handleTypingStart);
         socket.on('user_typing_stop', handleTypingStop);
         socket.on('active_users_list', handleActiveUsers);
         socket.on('user_status_changed', handleStatusChanged);
+        socket.on('NewMentionReceived', handleMentionReceived);
 
         // Register user presence
         if (auth?.user?._id) {
@@ -99,12 +108,13 @@ export const SocketContextProvider = ({ children }) => {
         }
 
         return () => {
-            socket.off('new message', handleNewMessage);
+            socket.off('NewMessageReceived', handleNewMessage);
             socket.off('REACTION_ADDED', handleReaction);
             socket.off('user_typing_start', handleTypingStart);
             socket.off('user_typing_stop', handleTypingStop);
             socket.off('active_users_list', handleActiveUsers);
             socket.off('user_status_changed', handleStatusChanged);
+            socket.off('NewMentionReceived', handleMentionReceived);
         };
     }, [socket, queryClient, toast, setMessageList, auth]);
 

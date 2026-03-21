@@ -1,9 +1,13 @@
 import Quill from 'quill';
+import 'quill-mention/autoregister';
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export const MessageRenderer = ({ value }) => {
     console.log('Value: ', value);
     const rendererRef = useRef(null);
+    const navigate = useNavigate();
+    const { workspaceId } = useParams();
     const [isEmpty, setIsEmpty] = useState(false);
 
     useEffect(() => {
@@ -13,7 +17,11 @@ export const MessageRenderer = ({ value }) => {
         console.log('Value: ', value);
 
         const quill = new Quill(document.createElement('div'), {
-            theme: 'snow'
+            theme: 'snow',
+            modules: {
+                toolbar: false,
+                mention: false
+            }
         });
         // Disable editting 
         quill.disable();
@@ -24,7 +32,24 @@ export const MessageRenderer = ({ value }) => {
         setIsEmpty(isContentEmpty);
         rendererRef.current.innerHTML = quill.root.innerHTML;
 
-    }, [value]);
+        const handleMentionClick = (e) => {
+            const mentionSpan = e.target.closest('.mention');
+            if (mentionSpan) {
+                const char = mentionSpan.getAttribute('data-denotation-char');
+                const id = mentionSpan.getAttribute('data-id');
+                if (char === '#' && workspaceId) {
+                    navigate(`/workspaces/${workspaceId}/channels/${id}`);
+                }
+            }
+        };
+
+        const currentRenderer = rendererRef.current;
+        currentRenderer.addEventListener('click', handleMentionClick);
+
+        return () => {
+            currentRenderer.removeEventListener('click', handleMentionClick);
+        };
+    }, [value, navigate, workspaceId]);
 
     if(isEmpty) return null;
 
