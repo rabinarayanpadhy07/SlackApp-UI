@@ -24,6 +24,9 @@ export const SocketContextProvider = ({ children }) => {
     const { toast } = useToast();
     const { auth } = useAuth();
     const [onlineUsers, setOnlineUsers] = useState([]);
+    
+    // State arrays tracking live connections globally natively
+    const [activeHuddleChannel, setActiveHuddleChannel] = useState(null);
 
     // Persist single socket connection across re-renders
     const [socket] = useState(() => io(import.meta.env.VITE_BACKEND_SOCKET_URL));
@@ -88,10 +91,25 @@ export const SocketContextProvider = ({ children }) => {
 
         const handleMentionReceived = (data) => {
             console.log('Mention received:', data);
+            
             toast({
                 title: `Mentioned by ${data.message.senderId?.username}`,
-                description: `You were mentioned in a recent message.`,
+                description: `You were mentioned in a recent message.`
             });
+        };
+
+        const handleHuddleStarted = (data) => {
+            setActiveHuddleChannel(data.channelId);
+            if (data.user?._id !== auth?.user?._id) {
+                toast({
+                    title: "🎧 Huddle Started!",
+                    description: `${data.user?.username || 'Someone'} started a Huddle! Click 'Join' to hop in.`
+                });
+            }
+        };
+
+        const handleHuddleEnded = (data) => {
+            setActiveHuddleChannel(prev => (prev === data.channelId ? null : prev));
         };
 
         socket.on('NewMessageReceived', handleNewMessage);
@@ -108,6 +126,7 @@ export const SocketContextProvider = ({ children }) => {
         socket.on('active_users_list', handleActiveUsers);
         socket.on('user_status_changed', handleStatusChanged);
         socket.on('NewMentionReceived', handleMentionReceived);
+        socket.on('HUDDLE_STARTED', handleHuddleStarted);
 
         // Register user presence
         if (auth?.user?._id) {
@@ -129,8 +148,10 @@ export const SocketContextProvider = ({ children }) => {
             socket.off('active_users_list', handleActiveUsers);
             socket.off('user_status_changed', handleStatusChanged);
             socket.off('NewMentionReceived', handleMentionReceived);
+            socket.off('HUDDLE_STARTED', handleHuddleStarted);
+            socket.off('HUDDLE_ENDED', handleHuddleEnded);
         };
-    }, [socket, queryClient, toast, setMessageList, auth]);
+    }, [socket, queryClient, toast, setMessageList, auth, activeHuddleChannel]);
 
     async function joinChannel(channelId) {
         socket.emit('JoinChannel', { channelId }, (data) => {
@@ -146,7 +167,8 @@ export const SocketContextProvider = ({ children }) => {
             currentChannel,
             messageList,
             typingUsers,
-            onlineUsers
+            onlineUsers,
+            activeHuddleChannel
         }}>
             {children}
         </SocketContext.Provider>

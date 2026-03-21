@@ -101,7 +101,7 @@ export const SignupCard = ({
                         className="w-full relative"
                         disabled={isPending}
                         onClick={() => {
-                            window.location.href = 'http://localhost:3000/api/v1/users/google';
+                            window.location.href = `${import.meta.env.VITE_BACKEND_API_URL}/users/google`;
                         }}
                         variant="outline"
                         size="lg"

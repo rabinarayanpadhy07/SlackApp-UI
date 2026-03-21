@@ -1,34 +1,38 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Loader2Icon, TriangleAlertIcon, Pin } from 'lucide-react';
-import { useEffect, useRef} from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ChannelHeader } from '@/components/molecules/Channel/ChannelHeader';
 import { ChatInput } from '@/components/molecules/ChatInput/ChatInput';
 import { Message } from '@/components/molecules/Message/Message';
 import { TypingIndicator } from '@/components/molecules/TypingIndicator/TypingIndicator';
+import { HuddleRoom } from '@/components/organisms/HuddleRoom/HuddleRoom';
 import { useGetChannelById } from '@/hooks/apis/channels/useGetChannelById';
 import { useGetChannelMessages } from '@/hooks/apis/channels/useGetChannelMessages';
 import { useChannelMessages } from '@/hooks/context/useChannelMessages';
 import { useSocket } from '@/hooks/context/useSocket';
 import { useMarkChannelAsRead } from '@/hooks/apis/read-receipts/useMarkChannelAsRead';
+import { useWebRTC } from '@/hooks/webrtc/useWebRTC';
 
 import { useAuth } from '@/hooks/context/useAuth';
 
 export const Channel = () => {
-
+    // Standard UI Contexts bounds mapping deeply natively 
     const { workspaceId, channelId } = useParams();
 
     const queryClient = useQueryClient();
-
+    
+    const { currentChannel, activeHuddleChannel, joinChannel, socket } = useSocket();
+    const [isExpanded, setIsExpanded] = useState(false);
     const { channelDetails, isFetching, isError } = useGetChannelById(channelId);
     const { setMessageList, messageList } = useChannelMessages();
-
-    const { joinChannel, socket } = useSocket();
 
     const { messages, isSuccess } = useGetChannelMessages(channelId);
     
     const { markAsRead } = useMarkChannelAsRead();
+
+    const webrtc = useWebRTC(channelId);
 
     const messageContainerListRef = useRef(null);
 
@@ -94,10 +98,26 @@ export const Channel = () => {
     }
 
     const pinnedMessages = messageList?.filter(m => m.isPinned && !m.deletedAt) || [];
+    const isHuddleLiveInChannel = activeHuddleChannel === channelId;
 
     return (
-        <div className='flex flex-col h-full'>
-            <ChannelHeader name={channelDetails?.name} />
+        <div className='flex flex-col h-full relative'>
+            <ChannelHeader 
+                name={channelDetails?.name} 
+                isHuddleActive={webrtc.isHuddleActive}
+                startHuddle={webrtc.startHuddle}
+                isHuddleLiveInChannel={isHuddleLiveInChannel}
+            />
+
+            {webrtc.isHuddleActive && (
+                <div className={`absolute z-50 bg-[#09090b] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden rounded-[20px] border border-white/10 ring-1 ring-white/5 cursor-default transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+                    isExpanded 
+                    ? "inset-4 w-auto h-auto rounded-[32px] shadow-[0_0_100px_rgba(0,0,0,0.8)]" 
+                    : "bottom-[20px] right-[20px] w-[340px] h-[260px]"
+                }`}>
+                    <HuddleRoom {...webrtc} isExpanded={isExpanded} toggleExpand={() => setIsExpanded(prev => !prev)} />
+                </div>
+            )}
 
             {pinnedMessages.length > 0 && (
                 <div className="bg-white border-b px-5 py-2 shadow-[0_2px_4px_rgba(0,0,0,0.02)] z-10 max-h-[20vh] overflow-y-auto w-full">
