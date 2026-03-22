@@ -31,6 +31,7 @@ export const Editor = ({
     const quillRef = useRef();
     const imageInputRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
+    const submitRef = useRef(null);
 
     useEffect(() => {
         onTextChangeRef.current = onTextChange;
@@ -43,6 +44,31 @@ export const Editor = ({
             toolbar.classList.toggle('hidden');
         }
     }
+
+    submitRef.current = () => {
+        const contents = quillRef.current?.getContents();
+        const text = quillRef.current?.getText().replace(/\n$/, '');
+        
+        if (!text && !image && variant === 'create') return;
+
+        const messageContent = JSON.stringify(contents);
+        
+        const mentions = [];
+        contents?.ops?.forEach(op => {
+            if (op.insert && op.insert.mention) {
+                if (op.insert.mention.denotationChar === '@') {
+                    mentions.push(op.insert.mention.id);
+                }
+            }
+        });
+
+        onSubmit({ body: messageContent, image, mentions });
+        quillRef.current?.setText('');
+        setImage(null);
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
+    };
 
     useEffect(() => {
 
@@ -89,15 +115,24 @@ export const Editor = ({
                     bindings: {
                         enter: {
                             key: 'Enter',
+                            shiftKey: false,
                             handler: () => {
-                                return;
+                                const mentionModule = quillRef.current?.getModule('mention');
+                                if (mentionModule && mentionModule.isOpen) {
+                                    return true;
+                                }
+
+                                submitRef.current?.();
+                                return false;
                             }
                         },
                         shift_enter: {
                             key: 'Enter',
                             shiftKey: true,
-                            handler: () => {
-                                quill.insertText(quill.getSelection()?.index || 0, '\n'); // insert a new line
+                            handler: (range, context) => {
+                                quill.insertText(range.index, '\n');
+                                quill.setSelection(range.index + 1);
+                                return false;
                             }
                         }
                     }
@@ -201,22 +236,7 @@ export const Editor = ({
                                 size={variant === 'update' ? 'sm' : 'iconSm'}
                                 className="bg-[#007a6a] hover:bg-[#007a6a]/80 text-white"
                                 onClick={() => {
-                                    const contents = quillRef.current?.getContents();
-                                    const messageContent = JSON.stringify(contents);
-                                    
-                                    const mentions = [];
-                                    contents?.ops?.forEach(op => {
-                                        if (op.insert && op.insert.mention) {
-                                            if (op.insert.mention.denotationChar === '@') {
-                                                mentions.push(op.insert.mention.id);
-                                            }
-                                        }
-                                    });
-
-                                    onSubmit({ body: messageContent, image, mentions });
-                                    quillRef.current?.setText('');
-                                    setImage(null);
-                                    imageInputRef.current.value = '';
+                                    submitRef.current?.();
                                 }}
                                 disabled={false}
                             >
