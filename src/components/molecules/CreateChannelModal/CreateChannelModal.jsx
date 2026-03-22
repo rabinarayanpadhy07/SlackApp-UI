@@ -1,5 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -7,11 +8,8 @@ import { Input } from '@/components/ui/input';
 import { useAddChannelToWorkspace } from '@/hooks/apis/workspaces/useAddChannelToWorkspace';
 import { useCreateChannelModal } from '@/hooks/context/useCreateChannelModal';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
-import { useToast } from '@/hooks/use-toast';
 
 export const CreateChannelModal = () => {
-
-    const { toast } = useToast();
 
     const queryClient = useQueryClient();
     
@@ -29,19 +27,27 @@ export const CreateChannelModal = () => {
 
     async function handleFormSubmit(e) {
         e.preventDefault();
-        await addChannelToWorkspaceMutation({
-            workspaceId: currentWorkspace?._id,
-            channelName: channelName
+        const workspaceId = currentWorkspace?._id;
+        if (!workspaceId) {
+            toast.error('Workspace not found.');
+            return;
+        }
+
+        createChannelMutation({
+            name: channelName,
+            workspaceId
+        }, {
+            onSuccess: () => {
+                toast.success('Channel created successfully');
+                queryClient.invalidateQueries({ queryKey: ['fetchWorkspaceById', workspaceId] });
+                handleClose();
+            },
+            onError: (error) => {
+                toast.error('Failed to create channel', {
+                    description: error.message
+                });
+            }
         });
-
-        toast({
-            type: 'success',
-            title: 'Channel created successfully'
-        });
-
-        queryClient.invalidateQueries(`fetchWorkspaceById-${currentWorkspace?._id}`);
-
-        handleClose();
     }
 
     return (

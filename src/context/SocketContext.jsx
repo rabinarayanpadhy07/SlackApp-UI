@@ -1,9 +1,9 @@
 import { createContext, useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/context/useAuth';
+import { toast } from 'sonner';
 
+import { useAuth } from '@/hooks/context/useAuth';
 import { useChannelMessages } from '@/hooks/context/useChannelMessages';
 
 const SocketContext = createContext();
@@ -21,7 +21,6 @@ export const SocketContextProvider = ({ children }) => {
     const { messageList, setMessageList } = useChannelMessages();
 
     const queryClient = useQueryClient();
-    const { toast } = useToast();
     const { auth } = useAuth();
     const [onlineUsers, setOnlineUsers] = useState([]);
     
@@ -38,8 +37,7 @@ export const SocketContextProvider = ({ children }) => {
                 setMessageList((prev) => [...prev, data]);
                 
                 if (currentChannelRef.current !== data.channelId) {
-                    toast({
-                        title: `New message from ${data.senderId?.username || 'someone'}`,
+                    toast.info(`New message from ${data.senderId?.username || 'someone'}`, {
                         description: data.body ? data.body.replace(/<[^>]*>?/gm, '') : 'Sent an image',
                     });
 
@@ -92,8 +90,7 @@ export const SocketContextProvider = ({ children }) => {
         const handleMentionReceived = (data) => {
             console.log('Mention received:', data);
             
-            toast({
-                title: `Mentioned by ${data.message.senderId?.username}`,
+            toast(`Mentioned by ${data.message.senderId?.username}`, {
                 description: `You were mentioned in a recent message.`
             });
         };
@@ -101,8 +98,7 @@ export const SocketContextProvider = ({ children }) => {
         const handleHuddleStarted = (data) => {
             setActiveHuddleChannel(data.channelId);
             if (data.user?._id !== auth?.user?._id) {
-                toast({
-                    title: "🎧 Huddle Started!",
+                toast.info("🎧 Huddle Started!", {
                     description: `${data.user?.username || 'Someone'} started a Huddle! Click 'Join' to hop in.`
                 });
             }
@@ -151,7 +147,7 @@ export const SocketContextProvider = ({ children }) => {
             socket.off('HUDDLE_STARTED', handleHuddleStarted);
             socket.off('HUDDLE_ENDED', handleHuddleEnded);
         };
-    }, [socket, queryClient, toast, setMessageList, auth, activeHuddleChannel]);
+    }, [socket, queryClient, setMessageList, auth, activeHuddleChannel]);
 
     async function joinChannel(channelId) {
         socket.emit('JoinChannel', { channelId }, (data) => {

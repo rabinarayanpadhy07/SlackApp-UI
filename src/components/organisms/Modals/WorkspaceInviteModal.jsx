@@ -3,30 +3,22 @@ import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useResetJoinCode } from '@/hooks/apis/workspaces/useResetJoinCode';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 export const WorkspaceInviteModal = ({ openInviteModal, setOpenInviteModal, workspaceName, joinCode, workspaceId }) => {
     
-    const { toast } = useToast();
-
     const { resetJoinCodeMutation } = useResetJoinCode(workspaceId);
 
     async function handleCopy() {
         const inviteLink = `${joinCode}`;
         await navigator.clipboard.writeText(inviteLink);
-        toast({
-            title: 'Link copied to clipboard',
-            type: 'success'
-        });
+        toast.success('Link copied to clipboard');
     }
 
     async function handleResetCode() {
         try {
             await resetJoinCodeMutation();
-        toast({
-            title: 'Join code reset successfully',
-            type: 'success'
-        });
+        toast.success('Join code reset successfully');
         } catch(error) {
            console.log('Error in resetting join code', error); 
         }

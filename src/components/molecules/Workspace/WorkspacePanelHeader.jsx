@@ -48,15 +48,15 @@ export const WorkspacePanelHeader = ({ workspace }) => {
             className='flex items-center justify-between px-4 h-[50px] gap-0.5'
         >
             <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger className="outline-none">
                     <Button
                         variant='transparent'
-                        className='font-semibold text-lg w-auto p-1.5 overflow-hidden'
+                        className='font-semibold text-lg w-auto p-1.5 overflow-hidden text-white hover:bg-white/10 transition-colors'
                     >
-                        <span className='truncate'>
+                        <span className='truncate mr-1'>
                             {workspace?.name}
                         </span>
-                        <ChevronDownIcon className='size-5 ml-1' />
+                        <ChevronDownIcon className='size-4 ml-1 opacity-70' />
                     </Button>
                 </DropdownMenuTrigger>
 

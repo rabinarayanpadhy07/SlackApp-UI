@@ -5,7 +5,7 @@ export const SidebarButton = ({
     label,
 }) => {
     return (
-        <div className="flex flex-col items-center justify-center cursor-pointer gap-y-0.5">
+        <div className="flex flex-col items-center justify-center cursor-pointer gap-y-0.5 group">
             <Button
                 variant="transparent"
                 className="size-9 p-2 group-hover:bg-accent/20"

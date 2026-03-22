@@ -1,10 +1,11 @@
-import { AlertTriangleIcon, HashIcon, Loader, MessageSquareTextIcon, SendHorizonalIcon } from 'lucide-react';
+import { AlertTriangleIcon, HashIcon, MessageSquareTextIcon, SendHorizonalIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
 import { SideBarItem } from '@/components/atoms/SideBarItem/SideBarItem';
 import { UserItem } from '@/components/atoms/UserItem/UserItem';
 import { WorkspacePanelHeader } from '@/components/molecules/Workspace/WorkspacePanelHeader';
 import { WorkspacePanelSection } from '@/components/molecules/Workspace/WorkspacePanelSection';
+import { Skeleton } from '../../ui/skeleton';
 import { useGetWorkspaceById } from '@/hooks/apis/workspaces/useGetWorkspaceById';
 import { useCreateChannelModal } from '@/hooks/context/useCreateChannelModal';
 import { useGetUnreadChannels } from '@/hooks/apis/read-receipts/useGetUnreadChannels';
@@ -21,9 +22,15 @@ export const WorkspacePanel = () => {
 
         return (
             <div
-                className='flex flex-col gap-y-2 h-full items-center justify-center text-white'
+                className='flex flex-col gap-y-4 h-full bg-[#481349] p-4'
             >
-                <Loader className='animate-spin size-6 text-white' />
+                <Skeleton className='h-10 w-full bg-white/20 rounded-md' />
+                <div className='flex flex-col gap-y-2 mt-4'>
+                    <Skeleton className='h-6 w-[80%] bg-white/10' />
+                    <Skeleton className='h-6 w-[60%] bg-white/10' />
+                    <Skeleton className='h-6 w-[70%] bg-white/10' />
+                    <Skeleton className='h-6 w-[50%] bg-white/10' />
+                </div>
             </div>
         );
     }
@@ -41,7 +48,7 @@ export const WorkspacePanel = () => {
 
     return (
         <div
-            className="flex flex-col h-full bg-slack-medium"
+            className="flex flex-col h-full bg-[#481349]"
         >
             <WorkspacePanelHeader workspace={workspace} />
 

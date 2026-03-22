@@ -9,31 +9,35 @@ const WorkspaceLayoutContent = ({ children }) => {
     const { activeThreadMessageId } = useThread();
 
     return (
-        <div className="h-[100vh]">
+        <div className="h-[100vh] bg-[#481349] flex flex-col overflow-hidden font-sans">
             <WorkspaceNavbar />
-            <div className="flex h-[calc(100vh-40px)]">
+            <div className="flex flex-1 overflow-hidden pb-2 pr-2">
                 <WorkspaceSidebar />
                 <ResizablePanelGroup direction="horizontal" autoSaveId={'workspace-resize'}>
                     <ResizablePanel
                         defaultSize={20}
                         minSize={11}
-                        className='bg-slack-medium'
+                        className='bg-[#481349] text-white/90'
                     >
                         <WorkspacePanel />
                     </ResizablePanel>
-                    <ResizableHandle withHandle/>
+                    <ResizableHandle withHandle className="w-1.5 bg-transparent flex flex-col items-center justify-center transition-colors" />
                     <ResizablePanel
                         minSize={20}
                         defaultSize={activeThreadMessageId ? 50 : 80}
+                        className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-lg border border-black/5 dark:border-white/5 overflow-hidden"
                     >
-                        {children}
+                        <div className="h-full overflow-y-auto">
+                            {children}
+                        </div>
                     </ResizablePanel>
                     {activeThreadMessageId && (
                         <>
-                            <ResizableHandle withHandle />
+                            <ResizableHandle withHandle className="w-1.5 bg-transparent flex flex-col items-center justify-center" />
                             <ResizablePanel
                                 defaultSize={30}
                                 minSize={20}
+                                className="bg-white dark:bg-[#1a1a1a] rounded-xl shadow-lg border border-black/5 dark:border-white/5 overflow-hidden"
                             >
                                 <ThreadPanel />
                             </ResizablePanel>

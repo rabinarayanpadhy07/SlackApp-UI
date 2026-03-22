@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TrashIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,14 +10,12 @@ import { Input } from '@/components/ui/input';
 import { useDeleteWorkspace } from '@/hooks/apis/workspaces/useDeleteWorkspace';
 import { useUpdateWorkspace } from '@/hooks/apis/workspaces/useUpdateWorkspace';
 import { useWorkspacePreferencesModal } from '@/hooks/context/useWorkspacePreferencesModal';
-import { useToast } from '@/hooks/use-toast';
 import { useConfirm } from '@/hooks/useConfirm';
 
 export const WorkspacePreferencesModal = () => {
 
     const queryClient = useQueryClient();
     const navigate = useNavigate();
-    const { toast } = useToast();
     const [workspaceId, setWorkspaceId] = useState(null);
     const [editOpen, setEditOpen] = useState(false);
 
@@ -47,19 +46,25 @@ export const WorkspacePreferencesModal = () => {
             if(!ok) {
                 return;
             }
-            await deleteWorkspaceMutation();
-            navigate('/home');
-            queryClient.invalidateQueries('fetchWorkspaces');
-            setOpenPreferences(false);
-            toast({
-                title: 'Workspace deleted successfully',
-                type: 'success'
+            await deleteWorkspaceMutation({
+                onSuccess: () => {
+                    navigate('/');
+                    queryClient.invalidateQueries('fetchWorkspaces');
+                    setOpenPreferences(false);
+                    toast.success('Workspace deleted successfully');
+                },
+                onError: (error) => {
+                    console.log('Error in deleting workspace', error);
+                    toast.error('Error in deleting workspace', {
+                        description: error.message
+                    });
+                }
             });
         } catch(error) {
+            // This catch block will only be reached if confirmation() throws an error
             console.log('Error in deleting workspace', error);
-            toast({
-                title: 'Error in deleting workspace',
-                type: 'error'
+            toast.error('Error in deleting workspace', {
+                description: error.message
             });
         }
     }
@@ -72,18 +77,24 @@ export const WorkspacePreferencesModal = () => {
             if(!ok) {
                 return;
             }
-            await updateWorkspaceMutation(renameValue);
-            queryClient.invalidateQueries(`fetchWorkspaceById-${workspace?._id}`);
-            setOpenPreferences(false);
-            toast({
-                title: 'Workspace updated successfully',
-                type: 'success'
+            await updateWorkspaceMutation(renameValue, {
+                onSuccess: () => {
+                    queryClient.invalidateQueries(`fetchWorkspaceById-${workspace?._id}`);
+                    setOpenPreferences(false);
+                    setEditOpen(false);
+                    toast.success('Workspace updated successfully');
+                },
+                onError: (error) => {
+                toast.error('Failed to update workspace', {
+                    description: error.message
+                });
+            }
             });
         } catch(error) {
+            // This catch block will only be reached if updateConfirmation() or updateWorkspaceMutation() (if not handled by onError) throws an error
             console.log('Error in updating workspace', error);
-            toast({
-                title: 'Error in updating workspace',
-                type: 'error'
+            toast.error('Error in updating workspace', {
+                description: error.message
             });
         }
     }

@@ -1,18 +1,19 @@
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { LucideLoader2 } from 'lucide-react';
 
+import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/context/useAuth';
-import { useToast } from '@/hooks/use-toast';
 
 export const GoogleAuthSuccess = () => {
-    const location = useLocation();
-    const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const { setAuth } = useAuth();
-    const { toast } = useToast();
+    const navigate = useNavigate();
+    
 
     useEffect(() => {
-        const params = new URLSearchParams(location.search);
+        const params = searchParams; // Changed from new URLSearchParams(location.search)
         const token = params.get('token');
         const userStr = params.get('user');
 
@@ -31,10 +32,8 @@ export const GoogleAuthSuccess = () => {
                     loading: false
                 });
 
-                toast({
-                    title: 'Successfully signed in',
-                    message: 'Welcome back!',
-                    type: 'success'
+                toast.success('Successfully signed in', {
+                    description: 'Welcome back!'
                 });
 
                 // Redirect to home
@@ -43,11 +42,8 @@ export const GoogleAuthSuccess = () => {
                 }, 2000);
             } catch (error) {
                 console.error('Error parsing user data', error);
-                toast({
-                    title: 'Failed to sign in',
-                    message: 'Something went wrong with Google authentication.',
-                    type: 'error',
-                    variant: 'destructive'
+                toast.error('Failed to sign in', {
+                    description: 'Something went wrong with Google authentication.'
                 });
                 navigate('/auth/signin');
             }
@@ -55,7 +51,7 @@ export const GoogleAuthSuccess = () => {
             console.error('No token or user data found in URL');
             navigate('/auth/signin');
         }
-    }, [location, navigate, setAuth, toast]);
+    }, [searchParams, navigate, setAuth]);
 
     return (
         <div className="h-[100vh] flex items-center justify-center bg-slack">
