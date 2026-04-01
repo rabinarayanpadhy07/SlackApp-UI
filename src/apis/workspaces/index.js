@@ -132,3 +132,31 @@ export const joinWorkspaceRequest = async ({ workspaceId, joinCode, token }) => 
         throw error.response.data;
     }
 };
+
+export const updateMemberRoleRequest = async ({ workspaceId, memberId, role, token }) => {
+    try {
+        const response = await axios.put(`/workspaces/${workspaceId}/members/${memberId}/role`, { role }, {
+            headers: {
+                'x-access-token': token
+            }
+        });
+        return response?.data?.data;
+    } catch(error) {
+        console.log('Error in updating member role request', error);
+        throw error.response.data;
+    }
+};
+
+export const removeMemberFromWorkspaceRequest = async ({ workspaceId, memberId, token }) => {
+    try {
+        const response = await axios.delete(`/workspaces/${workspaceId}/members/${memberId}`, {
+            headers: {
+                'x-access-token': token
+            }
+        });
+        return response?.data?.data;
+    } catch(error) {
+        console.log('Error in removing member from workspace request', error);
+        throw error.response.data;
+    }
+};

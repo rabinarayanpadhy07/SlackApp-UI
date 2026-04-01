@@ -2,6 +2,7 @@ import { ChevronDownIcon, ListFilterIcon, SquarePenIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 import { WorkspaceInviteModal } from '@/components/organisms/Modals/WorkspaceInviteModal';
+import { WorkspaceMembersModal } from '@/components/organisms/Modals/WorkspaceMembersModal';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/context/useAuth';
@@ -13,6 +14,7 @@ export const WorkspacePanelHeader = ({ workspace }) => {
     console.log('workspace is', workspace);
 
     const [openInviteModal, setOpenInviteModal] = useState(false);
+    const [openMembersModal, setOpenMembersModal] = useState(false);
 
     const { setWorkspace } = useWorkspacePreferencesModal();
 
@@ -42,6 +44,11 @@ export const WorkspacePanelHeader = ({ workspace }) => {
                 joinCode={workspace?.joinCode}
                 workspaceId={workspace?._id}
 
+            />
+            <WorkspaceMembersModal 
+                open={openMembersModal}
+                setOpen={setOpenMembersModal}
+                workspace={workspace}
             />
         
         <div
@@ -94,6 +101,13 @@ export const WorkspacePanelHeader = ({ workspace }) => {
                                 onClick={() => {setOpenInviteModal(true);}}
                             >
                                 Invite people to {workspace?.name}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                className='cursor-pointer py-2'
+                                onClick={() => {setOpenMembersModal(true);}}
+                            >
+                                Manage workspace members
                             </DropdownMenuItem>
                         </>
                     )}
