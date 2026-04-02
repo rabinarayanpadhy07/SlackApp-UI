@@ -123,6 +123,7 @@ export const SocketContextProvider = ({ children }) => {
         socket.on('user_status_changed', handleStatusChanged);
         socket.on('NewMentionReceived', handleMentionReceived);
         socket.on('HUDDLE_STARTED', handleHuddleStarted);
+        socket.on('HUDDLE_ENDED', handleHuddleEnded);
 
         // Register user presence
         if (auth?.user?._id) {

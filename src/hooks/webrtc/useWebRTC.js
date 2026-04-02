@@ -1,21 +1,40 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSocket } from '../context/useSocket';
-import { useAuth } from '../context/useAuth';
 
-export const useWebRTC = (channelId) => {
+import { useAuth } from '../context/useAuth';
+import { useSocket } from '../context/useSocket';
+
+const getSpeechRecognition = () => {
+    if (typeof window === 'undefined') return null;
+    return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+};
+
+export const useWebRTC = (channelId, hasAiAccess = false) => {
     const { socket } = useSocket();
     const { auth } = useAuth();
-    
+
     const [localStream, setLocalStream] = useState(null);
     const [remoteStreams, setRemoteStreams] = useState({});
-    
+    const [transcriptSegments, setTranscriptSegments] = useState([]);
+    const [latestSummary, setLatestSummary] = useState(null);
     const [isSharingScreen, setIsSharingScreen] = useState(false);
     const [isAudioEnabled, setIsAudioEnabled] = useState(true);
     const [isVideoEnabled, setIsVideoEnabled] = useState(true);
     const [isHuddleActive, setIsHuddleActive] = useState(false);
-    
+    const [isSummarizing, setIsSummarizing] = useState(false);
+    const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(false);
+    const [isAiEnabledForSession, setIsAiEnabledForSession] = useState(false);
+
     const peersRef = useRef({});
     const localStreamRef = useRef(null);
+    const transcriptSegmentsRef = useRef([]);
+    const recognitionRef = useRef(null);
+    const shouldRestartRecognitionRef = useRef(false);
+
+    const isCaptionsSupported = Boolean(getSpeechRecognition());
+
+    useEffect(() => {
+        transcriptSegmentsRef.current = transcriptSegments;
+    }, [transcriptSegments]);
 
     const iceServers = {
         iceServers: [
@@ -24,17 +43,115 @@ export const useWebRTC = (channelId) => {
         ]
     };
 
-    const startHuddle = async () => {
+    const stopSpeechRecognition = () => {
+        shouldRestartRecognitionRef.current = false;
+
+        if (recognitionRef.current) {
+            recognitionRef.current.onresult = null;
+            recognitionRef.current.onend = null;
+            recognitionRef.current.onerror = null;
+            recognitionRef.current.stop();
+            recognitionRef.current = null;
+        }
+    };
+
+    const startSpeechRecognition = () => {
+        const SpeechRecognition = getSpeechRecognition();
+
+        if (!hasAiAccess || !isAiEnabledForSession || !SpeechRecognition || !socket || !auth?.user?._id || !auth?.token) return;
+
+        stopSpeechRecognition();
+
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = (event) => {
+            let finalTranscript = '';
+
+            for (let index = event.resultIndex; index < event.results.length; index += 1) {
+                const result = event.results[index];
+                if (result.isFinal) {
+                    finalTranscript += result[0]?.transcript || '';
+                }
+            }
+
+            const text = finalTranscript.trim();
+            if (!text) return;
+
+            socket.emit('HUDDLE_TRANSCRIPT_SEGMENT', {
+                channelId,
+                token: auth.token,
+                segment: {
+                    speakerId: auth.user._id,
+                    speakerName: auth.user.username,
+                    text,
+                    createdAt: new Date().toISOString()
+                }
+            });
+        };
+
+        recognition.onend = () => {
+            recognitionRef.current = null;
+
+            if (shouldRestartRecognitionRef.current) {
+                startSpeechRecognition();
+            }
+        };
+
+        recognition.onerror = () => {
+            recognitionRef.current = null;
+        };
+
+        shouldRestartRecognitionRef.current = true;
+        recognitionRef.current = recognition;
+
+        try {
+            recognition.start();
+        } catch {
+            recognitionRef.current = null;
+        }
+    };
+
+    const requestSummary = async () => {
+        if (!socket || !hasAiAccess || !isAiEnabledForSession || !auth?.token) return null;
+
+        setIsSummarizing(true);
+
+        return new Promise((resolve) => {
+            socket.emit('GENERATE_HUDDLE_SUMMARY', { channelId, token: auth.token }, (response) => {
+                setIsSummarizing(false);
+
+                if (response?.success && response.data) {
+                    setLatestSummary(response.data);
+                    resolve(response.data);
+                    return;
+                }
+
+                resolve(null);
+            });
+        });
+    };
+
+    const startHuddle = async ({ enableAi = false } = {}) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-            
-            // Sync initial state overrides
-            stream.getAudioTracks().forEach(track => track.enabled = isAudioEnabled);
-            stream.getVideoTracks().forEach(track => track.enabled = isVideoEnabled);
-            
+
+            stream.getAudioTracks().forEach((track) => {
+                track.enabled = isAudioEnabled;
+            });
+            stream.getVideoTracks().forEach((track) => {
+                track.enabled = isVideoEnabled;
+            });
+
+            setTranscriptSegments([]);
+            setLatestSummary(null);
+            setIsAiEnabledForSession(Boolean(hasAiAccess && enableAi));
+            setIsCaptionsEnabled(Boolean(hasAiAccess && enableAi));
             setLocalStream(stream);
             localStreamRef.current = stream;
-            
+
             setIsHuddleActive(true);
             socket.emit('join-huddle', { channelId, user: auth?.user });
         } catch (error) {
@@ -42,36 +159,40 @@ export const useWebRTC = (channelId) => {
         }
     };
 
-    const stopHuddle = () => {
+    const stopHuddle = async () => {
+        if (transcriptSegmentsRef.current.length > 0) {
+            await requestSummary();
+        }
+
+        stopSpeechRecognition();
         socket?.emit('leave-huddle', { channelId });
-        localStreamRef.current?.getTracks().forEach(track => track.stop());
+        localStreamRef.current?.getTracks().forEach((track) => track.stop());
         setLocalStream(null);
         localStreamRef.current = null;
-        
-        Object.values(peersRef.current).forEach(peer => peer.close());
+
+        Object.values(peersRef.current).forEach((peer) => peer.close());
         peersRef.current = {};
         setRemoteStreams({});
         setIsHuddleActive(false);
         setIsSharingScreen(false);
+        setIsCaptionsEnabled(false);
+        setIsAiEnabledForSession(false);
     };
 
     const createPeer = (targetSocketId, user) => {
         const peer = new RTCPeerConnection(iceServers);
 
-        // Map existing tracks securely mapped into our new peer sender
-        localStreamRef.current?.getTracks().forEach(track => {
+        localStreamRef.current?.getTracks().forEach((track) => {
             peer.addTrack(track, localStreamRef.current);
         });
 
-        // Resolve incoming streams
         peer.ontrack = (event) => {
-            setRemoteStreams(prev => ({
+            setRemoteStreams((prev) => ({
                 ...prev,
                 [targetSocketId]: { stream: event.streams[0], user }
             }));
         };
 
-        // Network NAT resolution candidates
         peer.onicecandidate = (event) => {
             if (event.candidate) {
                 socket.emit('huddle-ice-candidate', {
@@ -117,7 +238,7 @@ export const useWebRTC = (channelId) => {
             if (peersRef.current[socketId]) {
                 peersRef.current[socketId].close();
                 delete peersRef.current[socketId];
-                setRemoteStreams(prev => {
+                setRemoteStreams((prev) => {
                     const updated = { ...prev };
                     delete updated[socketId];
                     return updated;
@@ -138,32 +259,87 @@ export const useWebRTC = (channelId) => {
             socket.off('huddle-ice-candidate', handleIceCandidate);
             socket.off('user-left-huddle', handleUserLeft);
         };
-    }, [socket, isHuddleActive]);
+    }, [socket, isHuddleActive, auth?.user, channelId]);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleSessionSync = (data) => {
+            if (data?.channelId !== channelId) return;
+            setTranscriptSegments(data.transcriptSegments || []);
+            setLatestSummary(data.latestSummary || null);
+        };
+
+        const handleTranscriptUpdated = (data) => {
+            if (data?.channelId !== channelId) return;
+            setTranscriptSegments(data.transcriptSegments || []);
+        };
+
+        const handleSummaryReady = (data) => {
+            if (data?.channelId !== channelId) return;
+            setLatestSummary(data.summary || null);
+        };
+
+        socket.on('HUDDLE_SESSION_SYNC', handleSessionSync);
+        socket.on('HUDDLE_TRANSCRIPT_UPDATED', handleTranscriptUpdated);
+        socket.on('HUDDLE_SUMMARY_READY', handleSummaryReady);
+
+        return () => {
+            socket.off('HUDDLE_SESSION_SYNC', handleSessionSync);
+            socket.off('HUDDLE_TRANSCRIPT_UPDATED', handleTranscriptUpdated);
+            socket.off('HUDDLE_SUMMARY_READY', handleSummaryReady);
+        };
+    }, [socket, channelId]);
+
+    useEffect(() => {
+        if (!hasAiAccess || !isAiEnabledForSession || !isHuddleActive || !isCaptionsEnabled || !isCaptionsSupported) {
+            stopSpeechRecognition();
+            return undefined;
+        }
+
+        startSpeechRecognition();
+
+        return () => {
+            stopSpeechRecognition();
+        };
+    }, [hasAiAccess, isAiEnabledForSession, isHuddleActive, isCaptionsEnabled, isCaptionsSupported, socket, channelId, auth?.user?._id, auth?.token]);
+
+    useEffect(() => () => {
+        stopSpeechRecognition();
+    }, []);
 
     const toggleAudio = () => {
-        setIsAudioEnabled(prev => {
+        setIsAudioEnabled((prev) => {
             const newState = !prev;
             if (localStreamRef.current) {
-                localStreamRef.current.getAudioTracks().forEach(t => t.enabled = newState);
+                localStreamRef.current.getAudioTracks().forEach((track) => {
+                    track.enabled = newState;
+                });
             }
             return newState;
         });
     };
 
     const toggleVideo = () => {
-        setIsVideoEnabled(prev => {
+        setIsVideoEnabled((prev) => {
             const newState = !prev;
             if (localStreamRef.current) {
-                localStreamRef.current.getVideoTracks().forEach(t => t.enabled = newState);
+                localStreamRef.current.getVideoTracks().forEach((track) => {
+                    track.enabled = newState;
+                });
             }
             return newState;
         });
     };
 
+    const toggleCaptions = () => {
+        if (!isCaptionsSupported || !isAiEnabledForSession) return;
+        setIsCaptionsEnabled((prev) => !prev);
+    };
+
     const toggleScreenShare = async () => {
         try {
             if (isSharingScreen) {
-                // Revert to camera
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: isAudioEnabled });
                 const videoTrack = stream.getVideoTracks()[0];
                 videoTrack.enabled = isVideoEnabled;
@@ -173,15 +349,14 @@ export const useWebRTC = (channelId) => {
                 oldVideoTrack.stop();
                 localStreamRef.current.addTrack(videoTrack);
 
-                Object.values(peersRef.current).forEach(peer => {
-                    const sender = peer.getSenders().find(s => s.track.kind === 'video');
+                Object.values(peersRef.current).forEach((peer) => {
+                    const sender = peer.getSenders().find((currentSender) => currentSender.track.kind === 'video');
                     if (sender) sender.replaceTrack(videoTrack);
                 });
 
                 setLocalStream(new MediaStream(localStreamRef.current.getTracks()));
                 setIsSharingScreen(false);
             } else {
-                // Capture Screen
                 const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 const screenTrack = screenStream.getVideoTracks()[0];
 
@@ -194,8 +369,8 @@ export const useWebRTC = (channelId) => {
                 oldVideoTrack.stop();
                 localStreamRef.current.addTrack(screenTrack);
 
-                Object.values(peersRef.current).forEach(peer => {
-                    const sender = peer.getSenders().find(s => s.track.kind === 'video');
+                Object.values(peersRef.current).forEach((peer) => {
+                    const sender = peer.getSenders().find((currentSender) => currentSender.track.kind === 'video');
                     if (sender) sender.replaceTrack(screenTrack);
                 });
 
@@ -203,21 +378,30 @@ export const useWebRTC = (channelId) => {
                 setIsSharingScreen(true);
             }
         } catch (error) {
-            console.error("Screen transition failed", error);
+            console.error('Screen transition failed', error);
         }
     };
 
     return {
         localStream,
         remoteStreams,
+        transcriptSegments,
+        latestSummary,
         isHuddleActive,
         isSharingScreen,
         isAudioEnabled,
         isVideoEnabled,
+        isCaptionsEnabled,
+        isCaptionsSupported,
+        isSummarizing,
+        hasAiAccess,
+        isAiEnabledForSession,
         startHuddle,
         stopHuddle,
+        requestSummary,
         toggleAudio,
         toggleVideo,
+        toggleCaptions,
         toggleScreenShare
     };
 };

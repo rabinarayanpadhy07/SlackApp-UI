@@ -3,7 +3,7 @@ import { MessageRenderer } from '@/components/atoms/MessageRenderer/MessageRende
 import { Avatar, AvatarFallback,AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Hint } from '@/components/atoms/Hint/Hint';
-import { SmilePlus, MessageSquareText, MoreHorizontal, Pin, Trash, Edit, Star, StarOff, PinOff } from 'lucide-react';
+import { SmilePlus, MessageSquareText, MoreHorizontal, Pin, Trash, Edit, Star, PinOff, Sparkles, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
@@ -29,6 +29,9 @@ export const Message = ({
     image,
     reactions = [],
     onAddReaction,
+    onRequestAiReply,
+    onUseAiReply,
+    showAiReplyAction = false,
     isReply = false,
     isEdited = false,
     deletedAt = null,
@@ -41,6 +44,8 @@ export const Message = ({
     const { currentWorkspace } = useCurrentWorkspace();
     
     const [isEditing, setIsEditing] = useState(false);
+    const [isFetchingAiReply, setIsFetchingAiReply] = useState(false);
+    const [aiSuggestions, setAiSuggestions] = useState([]);
 
     const isOnline = onlineUsers?.includes(authorId);
 
@@ -63,6 +68,17 @@ export const Message = ({
     };
     const handleToggleStar = () => {
         socket.emit('TOGGLE_STAR_MESSAGE', { messageId, memberId: auth?.user?._id, channelId: currentChannel });
+    };
+    const handleAiReply = async () => {
+        if (!onRequestAiReply) return;
+
+        setIsFetchingAiReply(true);
+        try {
+            const suggestions = await onRequestAiReply(messageId);
+            setAiSuggestions(Array.isArray(suggestions) ? suggestions : []);
+        } finally {
+            setIsFetchingAiReply(false);
+        }
     };
 
     // Group reactions by emoji
@@ -113,6 +129,18 @@ export const Message = ({
                             onClick={() => openThread(messageId)}
                         >
                             <MessageSquareText className="h-4 w-4" />
+                        </Button>
+                    </Hint>
+                )}
+                {showAiReplyAction && (
+                    <Hint label="AI reply">
+                        <Button
+                            variant="ghost"
+                            size="iconSm"
+                            onClick={handleAiReply}
+                            className="h-8 w-8 text-slate-500 hover:text-slate-800"
+                        >
+                            {isFetchingAiReply ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                         </Button>
                     </Hint>
                 )}
@@ -225,6 +253,20 @@ export const Message = ({
                                 >
                                     <span>{emoji}</span>
                                     <span>{count}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {!deletedAt && showAiReplyAction && aiSuggestions.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {aiSuggestions.map((suggestion) => (
+                                <button
+                                    key={suggestion}
+                                    onClick={() => onUseAiReply?.(suggestion)}
+                                    className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                                >
+                                    {suggestion}
                                 </button>
                             ))}
                         </div>

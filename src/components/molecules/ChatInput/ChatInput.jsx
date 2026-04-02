@@ -6,7 +6,7 @@ import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useSocket } from '@/hooks/context/useSocket';
 import { useQueryClient } from '@tanstack/react-query';
 
-export const ChatInput = ({ onSubmit }) => {
+export const ChatInput = ({ onSubmit, seedValue }) => {
 
     const { socket, currentChannel } = useSocket();
     const { auth } = useAuth();
@@ -82,6 +82,7 @@ export const ChatInput = ({ onSubmit }) => {
                 onCancel={() => {}}
                 disabled={false}
                 defaultValue=""
+                seedValue={seedValue}
                 workspaceMembers={currentWorkspace?.members || []}
                 workspaceChannels={currentWorkspace?.channels || []}
             />

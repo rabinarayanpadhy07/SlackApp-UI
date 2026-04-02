@@ -2,6 +2,7 @@ import { XIcon, Loader2Icon, TriangleAlertIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
+import { useState } from 'react';
 
 import { useThread } from '@/context/ThreadContext';
 import { Button } from '@/components/ui/button';
@@ -12,6 +13,7 @@ import { ChatInput } from '@/components/molecules/ChatInput/ChatInput';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useSocket } from '@/hooks/context/useSocket';
 import { getPreginedUrl, uploadImageToAWSpresignedUrl } from '@/apis/s3';
+import { buildEditorDraftFromText } from '@/utils/aiDraft';
 
 export const ThreadPanel = () => {
     const { activeThreadMessageId, closeThread } = useThread();
@@ -20,6 +22,8 @@ export const ThreadPanel = () => {
     const { auth } = useAuth();
     const { socket, currentChannel } = useSocket();
     const queryClient = useQueryClient();
+    const [replySeedValue, setReplySeedValue] = useState('');
+    const hasAiAccess = auth?.user?.plan === 'Paid';
 
     const { messages, isFetching, isError } = useGetThreadMessages({
         workspaceId: currentWorkspace?._id || workspaceId,
@@ -74,6 +78,40 @@ export const ThreadPanel = () => {
         });
     };
 
+    const handleRequestAiReply = (messageId) => new Promise((resolve) => {
+        if (!hasAiAccess || !auth?.token) {
+            resolve([]);
+            return;
+        }
+
+        const messageIndex = messages?.findIndex((message) => message._id === messageId) ?? -1;
+        const targetMessage = messageIndex >= 0 ? messages[messageIndex] : null;
+        const recentMessages = messageIndex >= 0
+            ? messages.slice(Math.max(0, messageIndex - 4), messageIndex).map((message) => ({
+                body: message.body,
+                senderName: message.senderId?.username
+            }))
+            : [];
+
+        socket.emit('GENERATE_AI_REPLY', {
+            token: auth.token,
+            targetMessage: {
+                body: targetMessage?.body,
+                senderName: targetMessage?.senderId?.username
+            },
+            recentMessages
+        }, (response) => {
+            resolve(response?.success ? response.data || [] : []);
+        });
+    });
+
+    const handleUseAiReply = (text) => {
+        setReplySeedValue('');
+        window.requestAnimationFrame(() => {
+            setReplySeedValue(buildEditorDraftFromText(text));
+        });
+    };
+
     if (!activeThreadMessageId) return null;
 
     return (
@@ -112,6 +150,9 @@ export const ThreadPanel = () => {
                         createdAt={message.createdAt} 
                         image={message.image}
                         reactions={message.reactions || []}
+                        onRequestAiReply={handleRequestAiReply}
+                        onUseAiReply={handleUseAiReply}
+                        showAiReplyAction={hasAiAccess}
                         // Disable replying to a reply to keep threads 1-level deep
                         isReply={true} 
                         isEdited={message.isEdited}
@@ -130,7 +171,7 @@ export const ThreadPanel = () => {
 
             {/* Thread Editor */}
             <div className="p-4 border-t bg-gray-50/50">
-                <ChatInput onSubmit={handleSubmit} />
+                <ChatInput onSubmit={handleSubmit} seedValue={replySeedValue} />
             </div>
         </div>
     );

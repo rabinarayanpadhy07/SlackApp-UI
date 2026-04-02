@@ -19,7 +19,8 @@ export const Editor = ({
     workspaceChannels = [],
     onCancel,
     placeholder,
-    defaultValue
+    defaultValue,
+    seedValue
 }) => {
 
     const [isToolbarVisible, setIsToolbarVisible] = useState(false);
@@ -27,11 +28,20 @@ export const Editor = ({
     const [image, setImage] = useState(null);
 
     const containerRef = useRef(); // reqd to initialize the editor
-    const defaultValueRef = useRef(defaultValue ? JSON.parse(defaultValue) : []);
+    const defaultValueRef = useRef([]);
     const quillRef = useRef();
     const imageInputRef = useRef(null);
     const onTextChangeRef = useRef(onTextChange);
     const submitRef = useRef(null);
+    const lastAppliedSeedRef = useRef(null);
+
+    useEffect(() => {
+        try {
+            defaultValueRef.current = defaultValue ? JSON.parse(defaultValue) : [];
+        } catch {
+            defaultValueRef.current = [];
+        }
+    }, [defaultValue]);
 
     useEffect(() => {
         onTextChangeRef.current = onTextChange;
@@ -160,6 +170,21 @@ export const Editor = ({
         }
 
     }, []);
+
+    useEffect(() => {
+        if (!quillRef.current || !seedValue || seedValue === lastAppliedSeedRef.current) return;
+
+        try {
+            const parsedSeed = JSON.parse(seedValue);
+            quillRef.current.setContents(parsedSeed);
+            const length = quillRef.current.getLength();
+            quillRef.current.setSelection(Math.max(length - 1, 0), 0);
+            quillRef.current.focus();
+            lastAppliedSeedRef.current = seedValue;
+        } catch {
+            // Ignore malformed externally seeded drafts.
+        }
+    }, [seedValue]);
 
 
     return (

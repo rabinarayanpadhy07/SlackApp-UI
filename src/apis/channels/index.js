@@ -44,13 +44,13 @@ export const updateChannelRequest = async ({ channelId, channelName, token }) =>
     }
 };
 
-export const getPaginatedMessages = async ({ channelId, limit, offset, token }) => {
+export const getPaginatedMessages = async ({ channelId, limit, page, token }) => {
     try {
         console.log('Fetching messages');
         const response = await axios.get(`/messages/${channelId}`, {
             params: {
                 limit: limit || 20,
-                offset: offset || 0
+                page: page || 1
             },
             headers: {
                 'x-access-token': token
