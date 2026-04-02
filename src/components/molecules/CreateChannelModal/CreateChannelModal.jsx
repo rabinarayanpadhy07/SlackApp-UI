@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useAddChannelToWorkspace } from '@/hooks/apis/workspaces/useAddChannelToWorkspace';
 import { useCreateChannelModal } from '@/hooks/context/useCreateChannelModal';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
 export const CreateChannelModal = () => {
 
@@ -17,7 +18,7 @@ export const CreateChannelModal = () => {
 
     const [channelName, setChannelName] = useState('');
 
-    const { addChannelToWorkspaceMutation } = useAddChannelToWorkspace();
+    const { addChannelToWorkspaceMutation, isPending } = useAddChannelToWorkspace();
 
     const {currentWorkspace} = useCurrentWorkspace();
 
@@ -33,21 +34,20 @@ export const CreateChannelModal = () => {
             return;
         }
 
-        createChannelMutation({
-            name: channelName,
-            workspaceId
-        }, {
-            onSuccess: () => {
-                toast.success('Channel created successfully');
-                queryClient.invalidateQueries({ queryKey: ['fetchWorkspaceById', workspaceId] });
-                handleClose();
-            },
-            onError: (error) => {
-                toast.error('Failed to create channel', {
-                    description: error.message
-                });
-            }
-        });
+        try {
+            await addChannelToWorkspaceMutation({
+                channelName: channelName.trim(),
+                workspaceId
+            });
+            toast.success('Channel created successfully');
+            queryClient.invalidateQueries({ queryKey: [`fetchWorkspaceById-${workspaceId}`] });
+            setChannelName('');
+            handleClose();
+        } catch (error) {
+            toast.error('Failed to create channel', {
+                description: getApiErrorMessage(error, 'Please try again.')
+            });
+        }
     }
 
     return (
@@ -67,11 +67,12 @@ export const CreateChannelModal = () => {
                         minLength={3}
                         placeholder="Channel Name e.g. team-announcements"
                         required
+                        disabled={isPending}
                     />
 
                     <div className='flex justify-end mt-4'>
-                        <Button>
-                            Create Channel
+                        <Button disabled={isPending}>
+                            {isPending ? 'Creating...' : 'Create Channel'}
                         </Button>
                     </div>
                 </form>

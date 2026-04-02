@@ -60,6 +60,13 @@ export const WorkspaceSwitcher = () => {
                     )
                 }
 
+                <DropdownMenuItem
+                    className='cursor-pointer flex-col justify-start items-start'
+                    onClick={() => navigate('/workspaces/join')}
+                >
+                    <p className='truncate'>Join another workspace</p>
+                </DropdownMenuItem>
+
             </DropdownMenuContent>
         </DropdownMenu>
     );

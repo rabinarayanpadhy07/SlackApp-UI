@@ -1,12 +1,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { useCreateWorkspace } from '@/hooks/apis/workspaces/useCreateWorkspace';
 import { useCreateWorkspaceModal } from '@/hooks/context/useCreateWorkspaceModal';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
 export const CreateWorkspaceModal = () => {
 
@@ -27,16 +29,17 @@ export const CreateWorkspaceModal = () => {
     async function handleFormSubmit(e) {
         e.preventDefault();
         try {
-            const data = await createWorkspaceMutation({ name: workspaceName });
+            const data = await createWorkspaceMutation({ name: workspaceName.trim() });
             console.log('Created the workspace', data);
             navigate(`/workspaces/${data._id}`);
-            queryClient.invalidateQueries('fetchWorkspaces');
-
-        } catch(error) {
-            console.log('Not able to create a new workspace', error);
-        } finally {
+            queryClient.invalidateQueries({ queryKey: ['fetchWorkspaces'] });
             setWorkspaceName('');
             setOpenCreateWorkspaceModal(false);
+        } catch(error) {
+            console.log('Not able to create a new workspace', error);
+            toast.error('Unable to create workspace', {
+                description: getApiErrorMessage(error, 'Please try again.')
+            });
         }
     }
 

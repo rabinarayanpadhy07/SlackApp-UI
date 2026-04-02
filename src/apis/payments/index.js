@@ -13,8 +13,9 @@ export const createOrderRequest = async ({ token, amount }) => {
         return response?.data?.data;
     } catch (error) {
         console.log('Error in creating order', error);
+        throw error?.response?.data || error;
     }
-}
+};
 
 export const capturePaymentRequest = async ({ token, orderId, status, paymentId, signature }) => {
     try {
@@ -33,5 +34,6 @@ export const capturePaymentRequest = async ({ token, orderId, status, paymentId,
         return response?.data?.data;
     } catch (error) {
         console.log('Error in capturing payment', error);
+        throw error?.response?.data || error;
     }
-}
+};

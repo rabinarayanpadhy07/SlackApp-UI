@@ -74,6 +74,8 @@ export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
     const isCurrentUserAdmin = workspace?.members?.some(
         m => m.memberId?._id === auth?.user?._id && m.role === 'admin'
     );
+    const ownerId = (workspace?.ownerId?._id || workspace?.ownerId || workspace?.members?.find((member) => member.role === 'admin')?.memberId?._id)?.toString();
+    const isCurrentUserOwner = ownerId === auth?.user?._id;
 
     return (
         <>
@@ -100,6 +102,11 @@ export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
                                             {member.memberId?._id === auth?.user?._id && ' (You)'}
                                         </p>
                                         <p className='text-xs text-muted-foreground flex items-center gap-x-1'>
+                                            {member.memberId?._id === ownerId && (
+                                                <span className='rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-purple-700'>
+                                                    Owner
+                                                </span>
+                                            )}
                                             {member.role === 'admin' ? (
                                                 <><ShieldCheckIcon className='w-3 h-3 text-emerald-500' /> Admin</>
                                             ) : (
@@ -117,10 +124,11 @@ export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align='end'>
-                                            {member.role === 'admin' ? (
+                                            {isCurrentUserOwner ? (
+                                                member.role === 'admin' ? (
                                                 <DropdownMenuItem 
                                                     onClick={() => handleRoleChange(member.memberId?._id, 'member')}
-                                                    disabled={isUpdatingRole || isRemoving}
+                                                    disabled={isUpdatingRole || isRemoving || member.memberId?._id === ownerId}
                                                 >
                                                     Demote to Member
                                                 </DropdownMenuItem>
@@ -131,11 +139,12 @@ export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
                                                 >
                                                     Promote to Admin
                                                 </DropdownMenuItem>
-                                            )}
+                                            )
+                                            ) : null}
                                             <DropdownMenuItem 
                                                 className='text-red-500 hover:text-red-600 focus:text-red-600'
                                                 onClick={() => handleRemoveMember(member.memberId?._id)}
-                                                disabled={isUpdatingRole || isRemoving}
+                                                disabled={isUpdatingRole || isRemoving || member.memberId?._id === ownerId || (member.role === 'admin' && !isCurrentUserOwner)}
                                             >
                                                 <TrashIcon className='w-4 h-4 mr-2' />
                                                 Remove from Workspace

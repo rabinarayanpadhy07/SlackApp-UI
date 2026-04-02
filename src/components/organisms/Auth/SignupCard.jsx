@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { buildGoogleAuthUrl } from '@/utils/buildGoogleAuthUrl';
 
 export const SignupCard = ({ 
     signupForm, 
@@ -101,7 +102,7 @@ export const SignupCard = ({
                         className="w-full relative"
                         disabled={isPending}
                         onClick={() => {
-                            window.location.href = `${import.meta.env.VITE_BACKEND_API_URL}/users/google`;
+                            window.location.href = buildGoogleAuthUrl();
                         }}
                         variant="outline"
                         size="lg"

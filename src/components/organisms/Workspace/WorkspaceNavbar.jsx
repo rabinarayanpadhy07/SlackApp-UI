@@ -22,7 +22,7 @@ export const WorkspaceNavbar = () => {
         
         if(!isFetching && !isSuccess && error) {
             console.log('Error fetching workspace', error.status);
-            if(error.status === 403) {
+            if(error.status === 401 || error.status === 403) {
                 logout();
                 navigate('/auth/signin');
             }
@@ -32,8 +32,7 @@ export const WorkspaceNavbar = () => {
             setCurrentWorkspace(workspace);
         }
 
-
-    }, [workspace, setCurrentWorkspace, isSuccess, error, isFetching]);
+    }, [workspace, setCurrentWorkspace, isSuccess, error, isFetching, logout, navigate]);
 
     
     if(isFetching) {

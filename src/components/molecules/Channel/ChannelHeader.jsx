@@ -1,11 +1,120 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { FaChevronDown } from 'react-icons/fa';
+import { Headphones, PencilIcon, Trash2Icon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
+import { useDeleteChannel } from '@/hooks/apis/channels/useDeleteChannel';
+import { useUpdateChannel } from '@/hooks/apis/channels/useUpdateChannel';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Headphones } from 'lucide-react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/context/useAuth';
+import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
+import { useConfirm } from '@/hooks/useConfirm';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
-export const ChannelHeader = ({ name, isHuddleActive, startHuddle, isHuddleLiveInChannel }) => {
+export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, isHuddleLiveInChannel }) => {
+    const navigate = useNavigate();
+    const { workspaceId } = useParams();
+    const queryClient = useQueryClient();
+    const { auth } = useAuth();
+    const { currentWorkspace, setCurrentWorkspace } = useCurrentWorkspace();
+    const { deleteChannelMutation, isPending } = useDeleteChannel();
+    const { updateChannelMutation, isPending: isUpdatingChannel } = useUpdateChannel();
+    const { confirmation, ConfirmDialog } = useConfirm({
+        title: 'Delete channel',
+        message: 'This will permanently remove the channel and its messages.'
+    });
+    const [editName, setEditName] = useState(name || '');
+    const [isEditingName, setIsEditingName] = useState(false);
+
+    const isAdmin = currentWorkspace?.members?.some(
+        (member) => member.memberId?._id === auth?.user?._id && member.role === 'admin'
+    );
+    const channelCount = currentWorkspace?.channels?.length || 0;
+
+    useEffect(() => {
+        setEditName(name || '');
+    }, [name]);
+
+    async function handleRenameChannel(e) {
+        e.preventDefault();
+
+        try {
+            const response = await updateChannelMutation({
+                channelId,
+                channelName: editName.trim()
+            });
+
+            setCurrentWorkspace((previous) => previous ? {
+                ...previous,
+                channels: previous.channels?.map((channel) =>
+                    channel._id === channelId ? { ...channel, name: response.name } : channel
+                ) || []
+            } : previous);
+            queryClient.setQueryData([`fetchWorkspaceById-${workspaceId}`], (previous) => previous ? {
+                ...previous,
+                channels: previous.channels?.map((channel) =>
+                    channel._id === channelId ? { ...channel, name: response.name } : channel
+                ) || []
+            } : previous);
+            queryClient.setQueryData([`get-channel-${channelId}`], (previous) => previous ? {
+                ...previous,
+                name: response.name
+            } : previous);
+            queryClient.invalidateQueries({ queryKey: [`fetchWorkspaceById-${workspaceId}`] });
+            queryClient.invalidateQueries({ queryKey: [`get-channel-${channelId}`] });
+
+            setIsEditingName(false);
+            toast.success('Channel renamed successfully');
+        } catch (error) {
+            toast.error('Unable to rename channel', {
+                description: getApiErrorMessage(error, 'Please try again.')
+            });
+        }
+    }
+
+    async function handleDeleteChannel() {
+        const ok = await confirmation();
+        if (!ok) return;
+
+        try {
+            const response = await deleteChannelMutation({ channelId });
+            const nextChannels = currentWorkspace?.channels?.filter((channel) => channel._id !== channelId) || [];
+
+            setCurrentWorkspace((previous) => previous ? {
+                ...previous,
+                channels: previous.channels?.filter((channel) => channel._id !== channelId) || []
+            } : previous);
+            queryClient.setQueryData([`fetchWorkspaceById-${workspaceId}`], (previous) => previous ? {
+                ...previous,
+                channels: previous.channels?.filter((channel) => channel._id !== channelId) || []
+            } : previous);
+            queryClient.invalidateQueries({ queryKey: [`fetchWorkspaceById-${workspaceId}`] });
+            queryClient.invalidateQueries({ queryKey: ['unreadChannels', workspaceId] });
+            queryClient.removeQueries({ queryKey: [`get-channel-${channelId}`] });
+
+            toast.success('Channel deleted successfully');
+            navigate(
+                response?.nextChannelId
+                    ? `/workspaces/${workspaceId}/channels/${response.nextChannelId}`
+                    : nextChannels[0]?._id
+                        ? `/workspaces/${workspaceId}/channels/${nextChannels[0]._id}`
+                        : `/workspaces/${workspaceId}`,
+                { replace: true }
+            );
+        } catch (error) {
+            toast.error('Unable to delete channel', {
+                description: getApiErrorMessage(error, 'Please try again.')
+            });
+        }
+    }
+
     return (
+        <>
+        <ConfirmDialog />
         <div
             className="bg-white border-b h-[50px] flex items-center justify-between px-4 overflow-hidden w-full"
         >
@@ -28,25 +137,85 @@ export const ChannelHeader = ({ name, isHuddleActive, startHuddle, isHuddleLiveI
                     </DialogHeader>
                     <div
                         className='px-4 pb-4 flex flex-col gap-y-2'
-                    >   
-                        <div
-                            className='px-5 py-4 bg-white rounded-lg border cursor-pointer hover:bg-gray-100'
-                        >
-                            <div className='flex items-center justify-between'>
-                                <p className='text-sm font-semibold'>
-                                    Channel name
-                                </p>
-                                <p className='text-sm font-semibold'>
-                                    Edit 
-                                </p>
+                    >
+                        {isAdmin ? (
+                            <button
+                                className='flex items-center gap-x-2 px-5 py-4 bg-white rounded-lg border cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50'
+                                onClick={handleDeleteChannel}
+                                disabled={isPending || isUpdatingChannel || channelCount <= 1}
+                            >
+                                <Trash2Icon className='size-4 text-red-500' />
+                                <div className='flex flex-col items-start'>
+                                    <p className='text-sm font-semibold text-red-600'>
+                                        Delete channel
+                                    </p>
+                                    <p className='text-xs text-muted-foreground'>
+                                        {channelCount <= 1 ? 'At least one channel must remain in the workspace.' : 'Remove this channel and its messages.'}
+                                    </p>
+                                </div>
+                            </button>
+                        ) : null}
+
+                        {isAdmin ? (
+                            <form className='space-y-3 rounded-lg border bg-slate-50 px-5 py-4' onSubmit={handleRenameChannel}>
+                                <div className='flex items-center justify-between'>
+                                    <div>
+                                        <p className='text-sm font-semibold text-slate-900'>Channel name</p>
+                                        <p className='text-xs text-muted-foreground'>Rename this channel for everyone in the workspace.</p>
+                                    </div>
+                                    <Button
+                                        type='button'
+                                        variant='ghost'
+                                        size='sm'
+                                        className='h-8 px-2 text-slate-600'
+                                        onClick={() => setIsEditingName((previous) => !previous)}
+                                    >
+                                        <PencilIcon className='mr-2 size-3.5' />
+                                        {isEditingName ? 'Close' : 'Edit'}
+                                    </Button>
+                                </div>
+
+                                {isEditingName ? (
+                                    <>
+                                        <Input
+                                            value={editName}
+                                            onChange={(event) => setEditName(event.target.value)}
+                                            minLength={3}
+                                            maxLength={50}
+                                            required
+                                            disabled={isUpdatingChannel || isPending}
+                                            placeholder='Channel name e.g. design-team'
+                                        />
+                                        <DialogFooter className='sm:justify-start'>
+                                            <Button
+                                                type='button'
+                                                variant='outline'
+                                                onClick={() => {
+                                                    setEditName(name || '');
+                                                    setIsEditingName(false);
+                                                }}
+                                                disabled={isUpdatingChannel || isPending}
+                                            >
+                                                Cancel
+                                            </Button>
+                                            <Button
+                                                type='submit'
+                                                disabled={isUpdatingChannel || isPending || editName.trim().length < 3 || editName.trim() === name}
+                                            >
+                                                {isUpdatingChannel ? 'Saving...' : 'Save channel name'}
+                                            </Button>
+                                        </DialogFooter>
+                                    </>
+                                ) : (
+                                    <p className='text-sm text-slate-700'># {name}</p>
+                                )}
+                            </form>
+                        ) : (
+                            <div className='rounded-lg border bg-slate-50 px-5 py-4'>
+                                <p className='text-sm font-semibold text-slate-900'>Channel name</p>
+                                <p className='mt-2 text-sm text-slate-700'># {name}</p>
                             </div>
-                            <p className='text-sm'>
-                                {name}
-                            </p>
-
-                        </div>
-
-                        {/* HW implement edit dialog for editting name of a channel */}
+                        )}
 
                     </div>
                 </DialogContent>
@@ -87,5 +256,6 @@ export const ChannelHeader = ({ name, isHuddleActive, startHuddle, isHuddleLiveI
             </div>
 
         </div>
+        </>
     );
 };

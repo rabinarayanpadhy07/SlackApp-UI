@@ -19,7 +19,7 @@ export const useSignin = () => {
             setAuth({
                 token: response.data.token,
                 user: response.data,
-                loading: false
+                isLoading: false
             });
 
             toast.success('Successfully signed in', {

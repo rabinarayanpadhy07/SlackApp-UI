@@ -1,9 +1,10 @@
 import { capturePaymentRequest } from "@/apis/payments"
 import { useAuth } from "@/hooks/context/useAuth";
 import { useMutation } from "@tanstack/react-query"
+import { toast } from "sonner";
 
 export const useCaptureOrder = () => {
-    const { auth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const {
         mutateAsync: captureOrderMutation,
         error,
@@ -17,11 +18,33 @@ export const useCaptureOrder = () => {
             paymentId,
             signature
         }),
-        onSuccess: () => {
+        onSuccess: (updatedUser, variables) => {
+            if (updatedUser) {
+                const nextUser = {
+                    ...auth?.user,
+                    ...updatedUser
+                };
+
+                localStorage.setItem('user', JSON.stringify(nextUser));
+                setAuth({
+                    token: auth?.token,
+                    user: nextUser,
+                    isLoading: false
+                });
+            }
+
             console.log('Payment captured successfully');
+            if (variables?.status === 'success') {
+                toast.success('Plan upgraded successfully', {
+                    description: 'Your account now has paid access.'
+                });
+            }
         },
         onError: (error) => {
             console.log('Error in capturing payment', error);
+            toast.error('Payment verification failed', {
+                description: error?.err || error?.message || 'Please try again.'
+            });
         }
     });
 
@@ -31,4 +54,4 @@ export const useCaptureOrder = () => {
         isSuccess,
         isPending
     }
-}
+};

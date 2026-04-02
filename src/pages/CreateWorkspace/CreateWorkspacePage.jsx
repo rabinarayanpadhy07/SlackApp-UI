@@ -2,17 +2,22 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Building2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useCreateWorkspace } from '@/hooks/apis/workspaces/useCreateWorkspace';
+import { useAuth } from '@/hooks/context/useAuth';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
 export const CreateWorkspacePage = () => {
     const [workspaceName, setWorkspaceName] = useState('');
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { isPending, createWorkspaceMutation } = useCreateWorkspace();
+    const { auth } = useAuth();
+    const currentPlan = auth?.user?.plan === 'Paid' ? 'Paid' : 'Normal';
 
     async function handleSubmit(e) {
         e.preventDefault();
@@ -23,6 +28,9 @@ export const CreateWorkspacePage = () => {
             navigate(`/workspaces/${data._id}`);
         } catch (err) {
             console.error('Failed to create workspace', err);
+            toast.error('Unable to create workspace', {
+                description: getApiErrorMessage(err, 'Please try again.')
+            });
         }
     }
 
@@ -37,6 +45,11 @@ export const CreateWorkspacePage = () => {
                     <CardDescription className="text-center">
                         Enter a name for your workspace. You can change it later.
                     </CardDescription>
+                    <div className="rounded-2xl bg-muted/50 px-4 py-3 text-center text-sm text-muted-foreground">
+                        {currentPlan === 'Paid'
+                            ? 'Paid plan active: create as many workspaces as you need.'
+                            : 'Normal plan: 1 workspace included on this account.'}
+                    </div>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">

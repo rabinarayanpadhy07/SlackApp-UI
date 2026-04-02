@@ -104,6 +104,7 @@ export const Channel = () => {
         <div className='flex flex-col h-full relative'>
             <ChannelHeader 
                 name={channelDetails?.name} 
+                channelId={channelId}
                 isHuddleActive={webrtc.isHuddleActive}
                 startHuddle={webrtc.startHuddle}
                 isHuddleLiveInChannel={isHuddleLiveInChannel}

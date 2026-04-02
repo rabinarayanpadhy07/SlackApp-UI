@@ -133,6 +133,20 @@ export const joinWorkspaceRequest = async ({ workspaceId, joinCode, token }) => 
     }
 };
 
+export const resolveWorkspaceJoinCodeRequest = async ({ joinCode, token }) => {
+    try {
+        const response = await axios.get(`/workspaces/join/${joinCode}`, {
+            headers: {
+                'x-access-token': token
+            }
+        });
+        return response?.data?.data;
+    } catch (error) {
+        console.log('Error in resolving workspace join code request', error);
+        throw error.response.data;
+    }
+};
+
 export const updateMemberRoleRequest = async ({ workspaceId, memberId, role, token }) => {
     try {
         const response = await axios.put(`/workspaces/${workspaceId}/members/${memberId}/role`, { role }, {

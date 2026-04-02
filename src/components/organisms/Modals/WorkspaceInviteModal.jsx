@@ -10,9 +10,9 @@ export const WorkspaceInviteModal = ({ openInviteModal, setOpenInviteModal, work
     const { resetJoinCodeMutation } = useResetJoinCode(workspaceId);
 
     async function handleCopy() {
-        const inviteLink = `${joinCode}`;
+        const inviteLink = `${window.location.origin}/workspaces/join/${workspaceId}?code=${joinCode}`;
         await navigator.clipboard.writeText(inviteLink);
-        toast.success('Link copied to clipboard');
+        toast.success('Invite link copied to clipboard');
     }
 
     async function handleResetCode() {
@@ -42,8 +42,11 @@ export const WorkspaceInviteModal = ({ openInviteModal, setOpenInviteModal, work
                     <p className='font-bold text-4xl uppercase'>
                         {joinCode}
                     </p>
+                    <p className='text-center text-sm text-muted-foreground'>
+                        Share this code directly, or copy the invite link below so teammates can join from the app.
+                    </p>
                     <Button size="sm" variant="ghost" onClick={handleCopy}>
-                        Copy Code
+                        Copy Invite Link
                         <CopyIcon className='size-4 ml-2' />
                     </Button>
 

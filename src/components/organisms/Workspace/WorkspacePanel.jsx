@@ -5,17 +5,18 @@ import { SideBarItem } from '@/components/atoms/SideBarItem/SideBarItem';
 import { UserItem } from '@/components/atoms/UserItem/UserItem';
 import { WorkspacePanelHeader } from '@/components/molecules/Workspace/WorkspacePanelHeader';
 import { WorkspacePanelSection } from '@/components/molecules/Workspace/WorkspacePanelSection';
-import { Skeleton } from '../../ui/skeleton';
 import { useGetWorkspaceById } from '@/hooks/apis/workspaces/useGetWorkspaceById';
 import { useCreateChannelModal } from '@/hooks/context/useCreateChannelModal';
 import { useGetUnreadChannels } from '@/hooks/apis/read-receipts/useGetUnreadChannels';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { Skeleton } from '../../ui/skeleton';
 
 export const WorkspacePanel = () => {
 
     const { workspaceId } = useParams();
 
     const { setOpenCreateChannelModal } = useCreateChannelModal();
-    const { workspace, isFetching, isSuccess } = useGetWorkspaceById(workspaceId);
+    const { workspace, isFetching, isSuccess, error } = useGetWorkspaceById(workspaceId);
     const { unreadMap } = useGetUnreadChannels(workspaceId);
 
     if(isFetching) {
@@ -41,7 +42,10 @@ export const WorkspacePanel = () => {
                 className='flex flex-col gap-y-2 h-full items-center justify-center text-white'
             >
                 <AlertTriangleIcon className='size-6 text-white' />
-                Something went wrong
+                <p>Something went wrong</p>
+                <p className='max-w-[220px] text-center text-xs text-white/70'>
+                    {getApiErrorMessage(error, 'We could not load this workspace right now.')}
+                </p>
             </div>
         );
     }

@@ -1,8 +1,10 @@
 import { useCaptureOrder } from "@/hooks/apis/payments/useCaptureOrder";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const loadRazorpayScript = (src) => {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
         const script = document.createElement('script');
         script.src = src;
         script.onload = () => {
@@ -25,6 +27,7 @@ export const RenderRazorpayPopup = ({
  }) => {
 
     console.log('RenderRazorpayPopup', orderId, keyId, currency, amount);
+    const navigate = useNavigate();
 
     const { captureOrderMutation } = useCaptureOrder();
     
@@ -39,6 +42,9 @@ export const RenderRazorpayPopup = ({
 
         rzp.on('payment.failed',async function (response){
             console.log('Payment failed', response.error.code);
+            toast.error('Payment failed', {
+                description: response?.error?.description || 'Please try again.'
+            });
             await captureOrderMutation({
                 orderId: options.order_id,
                 status: 'failed',
@@ -60,17 +66,20 @@ export const RenderRazorpayPopup = ({
             handler: async (response) => {
                 console.log('Payment success', response);
                 console.log('Signature', response.razorpay_signature);
-                await captureOrderMutation({
+                const result = await captureOrderMutation({
                     orderId: orderId,
                     status: 'success',
                     paymentId: response.razorpay_payment_id,
                     signature: response.razorpay_signature
                 });
-                // redirect your user to your custom succesds page
+
+                if (result) {
+                    navigate('/home');
+                }
             }
         })
         
-    }, [orderId]);
+    }, [amount, captureOrderMutation, currency, keyId, navigate, orderId]);
 
     return null;
-}
+};

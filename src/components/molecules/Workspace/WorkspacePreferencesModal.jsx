@@ -9,8 +9,10 @@ import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogT
 import { Input } from '@/components/ui/input';
 import { useDeleteWorkspace } from '@/hooks/apis/workspaces/useDeleteWorkspace';
 import { useUpdateWorkspace } from '@/hooks/apis/workspaces/useUpdateWorkspace';
+import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useWorkspacePreferencesModal } from '@/hooks/context/useWorkspacePreferencesModal';
 import { useConfirm } from '@/hooks/useConfirm';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
 export const WorkspacePreferencesModal = () => {
 
@@ -23,6 +25,7 @@ export const WorkspacePreferencesModal = () => {
     const { initialValue, openPreferences, setOpenPreferences, workspace } = useWorkspacePreferencesModal();
     const { deleteWorkspaceMutation } = useDeleteWorkspace(workspaceId);
     const { isPending, updateWorkspaceMutation } = useUpdateWorkspace(workspaceId);
+    const { setCurrentWorkspace } = useCurrentWorkspace();
    
     const { confirmation, ConfirmDialog } = useConfirm({ title: 'Do you want to delete the workspace?', message: 'This action cannot be undone.' });
 
@@ -46,25 +49,20 @@ export const WorkspacePreferencesModal = () => {
             if(!ok) {
                 return;
             }
-            await deleteWorkspaceMutation({
-                onSuccess: () => {
-                    navigate('/');
-                    queryClient.invalidateQueries('fetchWorkspaces');
-                    setOpenPreferences(false);
-                    toast.success('Workspace deleted successfully');
-                },
-                onError: (error) => {
-                    console.log('Error in deleting workspace', error);
-                    toast.error('Error in deleting workspace', {
-                        description: error.message
-                    });
-                }
-            });
+            await deleteWorkspaceMutation();
+            queryClient.setQueryData(['fetchWorkspaces'], (existingWorkspaces = []) =>
+                existingWorkspaces.filter((item) => item._id !== workspaceId)
+            );
+            queryClient.removeQueries({ queryKey: [`fetchWorkspaceById-${workspaceId}`] });
+            await queryClient.invalidateQueries({ queryKey: ['fetchWorkspaces'] });
+            setCurrentWorkspace(null);
+            setOpenPreferences(false);
+            navigate('/home', { replace: true });
+            toast.success('Workspace deleted successfully');
         } catch(error) {
-            // This catch block will only be reached if confirmation() throws an error
             console.log('Error in deleting workspace', error);
             toast.error('Error in deleting workspace', {
-                description: error.message
+                description: getApiErrorMessage(error, 'Please try again.')
             });
         }
     }
@@ -79,22 +77,21 @@ export const WorkspacePreferencesModal = () => {
             }
             await updateWorkspaceMutation(renameValue, {
                 onSuccess: () => {
-                    queryClient.invalidateQueries(`fetchWorkspaceById-${workspace?._id}`);
+                    queryClient.invalidateQueries({ queryKey: [`fetchWorkspaceById-${workspace?._id}`] });
                     setOpenPreferences(false);
                     setEditOpen(false);
                     toast.success('Workspace updated successfully');
                 },
                 onError: (error) => {
                 toast.error('Failed to update workspace', {
-                    description: error.message
+                    description: getApiErrorMessage(error, 'Please try again.')
                 });
             }
             });
         } catch(error) {
-            // This catch block will only be reached if updateConfirmation() or updateWorkspaceMutation() (if not handled by onError) throws an error
             console.log('Error in updating workspace', error);
             toast.error('Error in updating workspace', {
-                description: error.message
+                description: getApiErrorMessage(error, 'Please try again.')
             });
         }
     }

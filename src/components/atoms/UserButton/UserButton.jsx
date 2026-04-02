@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCreateWorkspaceModal } from '@/hooks/context/useCreateWorkspaceModal';
+import { useUserSettingsModal } from '@/hooks/context/useUserSettingsModal';
 
 export const UserButton = () => {
 
@@ -15,9 +15,14 @@ export const UserButton = () => {
     const { auth, logout } = useAuth();
 
     const { setOpenCreateWorkspaceModal } = useCreateWorkspaceModal();
+    const { setOpenUserSettingsModal } = useUserSettingsModal();
 
     function openWorkspaceCreateModal() {
         setOpenCreateWorkspaceModal(true);
+    }
+
+    function openUserSettings() {
+        setOpenUserSettingsModal(true);
     }
 
     async function handleLogout() {
@@ -40,7 +45,7 @@ export const UserButton = () => {
                     <PencilIcon className='size-4 mr-2 h-10' />
                     Create Workspace
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={openUserSettings}>
                     <SettingsIcon className='size-4 mr-2 h-10' />
                     Settings
                 </DropdownMenuItem>

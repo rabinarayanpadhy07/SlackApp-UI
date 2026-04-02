@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LucideLoader2 } from 'lucide-react';
 
-import { Card, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/hooks/context/useAuth';
 
 export const GoogleAuthSuccess = () => {
@@ -16,6 +15,15 @@ export const GoogleAuthSuccess = () => {
         const params = searchParams; // Changed from new URLSearchParams(location.search)
         const token = params.get('token');
         const userStr = params.get('user');
+        const error = params.get('error');
+
+        if (error) {
+            toast.error('Failed to sign in with Google', {
+                description: 'Please try again.'
+            });
+            navigate('/auth/signin', { replace: true });
+            return;
+        }
 
         if (token && userStr) {
             try {
@@ -29,27 +37,26 @@ export const GoogleAuthSuccess = () => {
                 setAuth({
                     token,
                     user,
-                    loading: false
+                    isLoading: false
                 });
 
                 toast.success('Successfully signed in', {
                     description: 'Welcome back!'
                 });
 
-                // Redirect to home
                 setTimeout(() => {
-                    navigate('/home');
+                    navigate('/home', { replace: true });
                 }, 2000);
             } catch (error) {
                 console.error('Error parsing user data', error);
                 toast.error('Failed to sign in', {
                     description: 'Something went wrong with Google authentication.'
                 });
-                navigate('/auth/signin');
+                navigate('/auth/signin', { replace: true });
             }
         } else {
             console.error('No token or user data found in URL');
-            navigate('/auth/signin');
+            navigate('/auth/signin', { replace: true });
         }
     }, [searchParams, navigate, setAuth]);
 
