@@ -1,8 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { ProtectedRoute } from '@/components/molecules/ProtectedRoute/ProtectedRoute';
+import { SuperAdminRoute } from '@/components/molecules/SuperAdminRoute/SuperAdminRoute';
 import { SigninContainer } from '@/components/organisms/Auth/SigninContainer';
 import { SignupContainer } from '@/components/organisms/Auth/SignupContainer';
+import { AdminDashboard } from '@/pages/Admin/AdminDashboard';
 import { Auth } from '@/pages/Auth/Auth';
 import { Home } from '@/pages/Home/Home';
 import { Notfound } from '@/pages/Notfound/Notfound';
@@ -28,6 +30,7 @@ export const AppRoutes = () => {
           <Route path="/auth/signin" element={<Auth><SigninContainer /></Auth>} />
           <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
           <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><SuperAdminRoute><AdminDashboard /></SuperAdminRoute></ProtectedRoute>} />
           <Route path="/workspaces/:workspaceId" element={<ProtectedRoute><WorkspaceLayout><WorkspaceRedirect /></WorkspaceLayout></ProtectedRoute>} />
           <Route 
             path="/workspaces/:workspaceId/channels/:channelId"

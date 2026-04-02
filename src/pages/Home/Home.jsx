@@ -1,4 +1,4 @@
-import { ArrowRightIcon, CrownIcon, FolderPlusIcon, SparklesIcon, UsersIcon } from 'lucide-react';
+import { ArrowRightIcon, CrownIcon, FolderPlusIcon, ShieldIcon, SparklesIcon, UsersIcon } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,12 +14,12 @@ export const Home = () => {
 
     useEffect(() => {
         if (auth?.isLoading || isFetching) return;
-        if (workspaces?.length > 0) {
+        if (!auth?.user?.isSuperAdmin && workspaces?.length > 0) {
             navigate(`/workspaces/${workspaces[0]._id}`);
         }
-    }, [auth?.isLoading, isFetching, navigate, workspaces]);
+    }, [auth?.isLoading, auth?.user?.isSuperAdmin, isFetching, navigate, workspaces]);
 
-    if (auth?.isLoading || isFetching || workspaces?.length > 0) {
+    if (auth?.isLoading || isFetching || (!auth?.user?.isSuperAdmin && workspaces?.length > 0)) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#6c2a6b,_#4a154b_45%,_#2b0f30_100%)] p-6">
                 <div className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/10 p-8 text-center text-white shadow-[0_24px_80px_-36px_rgba(0,0,0,0.55)] backdrop-blur">
@@ -59,6 +59,12 @@ export const Home = () => {
                             <UsersIcon className="mr-2 size-4" />
                             Join workspace
                         </Button>
+                        {auth?.user?.isSuperAdmin ? (
+                            <Button variant="outline" className="h-12 rounded-full border-amber-300/30 bg-amber-300/10 text-white hover:bg-amber-300/20" onClick={() => navigate('/admin')}>
+                                <ShieldIcon className="mr-2 size-4" />
+                                Open admin dashboard
+                            </Button>
+                        ) : null}
                         {currentPlan === 'Normal' ? (
                             <Button variant="outline" className="h-12 rounded-full border-white/20 bg-white/5 text-white hover:bg-white/10" onClick={() => navigate('/makepayment')}>
                                 Upgrade to Paid

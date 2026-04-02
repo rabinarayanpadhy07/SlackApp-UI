@@ -1,4 +1,4 @@
-import { InfoIcon, LucideLoader2, SearchIcon } from 'lucide-react';
+import { InfoIcon, LucideLoader2, SearchIcon, ShieldIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -14,7 +14,7 @@ export const WorkspaceNavbar = () => {
     const { workspaceId } = useParams();
 
     const navigate = useNavigate();
-    const { logout } = useAuth();
+    const { auth, logout } = useAuth();
     const { isFetching, workspace, error, isSuccess } = useGetWorkspaceById(workspaceId);
     const { setCurrentWorkspace } = useCurrentWorkspace();
 
@@ -65,6 +65,16 @@ export const WorkspaceNavbar = () => {
             <div
                 className='ml-auto flex-1 flex items-center justify-end pr-3'
             >
+                {auth?.user?.isSuperAdmin && (
+                    <Button
+                        variant='transparent'
+                        size='icon'
+                        className="hover:bg-white/10 rounded"
+                        onClick={() => navigate('/admin')}
+                    >
+                        <ShieldIcon className='size-4.5 text-amber-300 hover:text-amber-200' />
+                    </Button>
+                )}
                 <Button
                     variant='transparent'
                     size='icon'
