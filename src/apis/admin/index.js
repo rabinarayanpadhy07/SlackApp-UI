@@ -1,23 +1,23 @@
 import axios from '@/config/axiosConfig';
 
-const withToken = (token) => ({
-    headers: {
-        'x-access-token': token
-    }
+const withParams = (params = {}) => ({
+    params
 });
 
-export const getAdminOverviewRequest = async ({ token }) => {
-    const response = await axios.get('/admin/overview', withToken(token));
+export const getAdminOverviewRequest = async () => {
+    const response = await axios.get('/admin/overview');
     return response?.data?.data;
 };
 
-export const getAdminUsersRequest = async ({ token }) => {
-    const response = await axios.get('/admin/users', withToken(token));
+export const getAdminUsersRequest = async ({ page = 1, limit = 10, search = '' }) => {
+    const response = await axios.get(
+        '/admin/users',
+        withParams({ page, limit, search })
+    );
     return response?.data?.data;
 };
 
 export const updateAdminUserRequest = async ({
-    token,
     userId,
     plan,
     isSuperAdmin,
@@ -25,52 +25,59 @@ export const updateAdminUserRequest = async ({
 }) => {
     const response = await axios.patch(
         `/admin/users/${userId}`,
-        { plan, isSuperAdmin, isActive },
-        withToken(token)
+        { plan, isSuperAdmin, isActive }
     );
     return response?.data?.data;
 };
 
-export const getAdminWorkspacesRequest = async ({ token }) => {
-    const response = await axios.get('/admin/workspaces', withToken(token));
+export const getAdminWorkspacesRequest = async ({
+    page = 1,
+    limit = 10,
+    search = ''
+}) => {
+    const response = await axios.get(
+        '/admin/workspaces',
+        withParams({ page, limit, search })
+    );
     return response?.data?.data;
 };
 
-export const deleteAdminWorkspaceRequest = async ({ token, workspaceId }) => {
-    const response = await axios.delete(`/admin/workspaces/${workspaceId}`, withToken(token));
+export const deleteAdminWorkspaceRequest = async ({ workspaceId }) => {
+    const response = await axios.delete(`/admin/workspaces/${workspaceId}`);
     return response?.data?.data;
 };
 
-export const updateAdminWorkspaceRequest = async ({ token, workspaceId, isArchived }) => {
+export const updateAdminWorkspaceRequest = async ({ workspaceId, isArchived }) => {
     const response = await axios.patch(
         `/admin/workspaces/${workspaceId}`,
-        { isArchived },
-        withToken(token)
+        { isArchived }
     );
     return response?.data?.data;
 };
 
-export const getAdminPaymentsRequest = async ({ token }) => {
-    const response = await axios.get('/admin/payments', withToken(token));
+export const getAdminPaymentsRequest = async ({ page = 1, limit = 10 }) => {
+    const response = await axios.get('/admin/payments', withParams({ page, limit }));
     return response?.data?.data;
 };
 
-export const getAdminMessagesRequest = async ({ token, search = '' }) => {
-    const response = await axios.get('/admin/messages', {
-        ...withToken(token),
-        params: {
-            search
-        }
-    });
+export const getAdminMessagesRequest = async ({
+    page = 1,
+    limit = 10,
+    search = ''
+}) => {
+    const response = await axios.get(
+        '/admin/messages',
+        withParams({ page, limit, search })
+    );
     return response?.data?.data;
 };
 
-export const deleteAdminMessageRequest = async ({ token, messageId }) => {
-    const response = await axios.delete(`/admin/messages/${messageId}`, withToken(token));
+export const deleteAdminMessageRequest = async ({ messageId }) => {
+    const response = await axios.delete(`/admin/messages/${messageId}`);
     return response?.data?.data;
 };
 
-export const getAdminAuditLogsRequest = async ({ token }) => {
-    const response = await axios.get('/admin/audit-logs', withToken(token));
+export const getAdminAuditLogsRequest = async ({ page = 1, limit = 10 }) => {
+    const response = await axios.get('/admin/audit-logs', withParams({ page, limit }));
     return response?.data?.data;
 };
