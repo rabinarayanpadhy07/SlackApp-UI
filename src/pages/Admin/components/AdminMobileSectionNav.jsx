@@ -13,9 +13,9 @@ export const AdminMobileSectionNav = ({
                         key={section.key}
                         type="button"
                         onClick={() => onSectionChange(section.key)}
-                        className={`rounded-full px-4 py-2 text-sm font-medium transition ${isActive
-                            ? 'bg-white text-[#4a154b]'
-                            : 'bg-white/10 text-white/72'
+                        className={`rounded-full border px-4 py-2 text-sm font-medium transition ${isActive
+                            ? 'border-[#611f69]/40 bg-[linear-gradient(90deg,#611f69,#2EB67D)] text-white shadow-[0_18px_40px_-24px_rgba(97,31,105,0.55)]'
+                            : 'border-[#611f69]/25 bg-[#350d36]/35 text-[#d1cbd4]'
                             }`}
                     >
                         {section.label}

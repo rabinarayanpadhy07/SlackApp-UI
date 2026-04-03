@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     formatDate,
+    getInitials,
     innerCardClass
 } from '../utils/adminDashboardUtils';
 import { AdminEmptyState } from './AdminEmptyState';
@@ -19,42 +20,46 @@ export const MessageModerationSection = ({
 }) => (
     <AdminSectionCard
         title="Message Moderation"
-        description="Review recent messages and remove content when needed."
+        description="Review recent messages, inspect context quickly, and remove problematic content with confidence."
     >
         {messages.length === 0 && (
             <AdminEmptyState
                 title="No messages found"
-                description="Try another search or clear the filter."
+                description="Try another search or clear the filter to view more conversation activity."
             />
         )}
 
         {messages.map((message) => (
             <div key={message._id} className={innerCardClass}>
-                <div className="flex flex-col gap-4 p-5 xl:flex-row xl:items-start xl:justify-between">
-                    <div>
-                        <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-semibold text-[#311333]">
-                                {message.sender?.email || 'Unknown sender'}
-                            </p>
-                            <AdminPill tone={message.deletedAt ? 'rose' : 'emerald'}>
-                                {message.deletedAt ? 'Deleted' : 'Live'}
-                            </AdminPill>
+                <div className="flex min-w-0 flex-col gap-5 p-5 xl:flex-row xl:items-start xl:justify-between xl:gap-8">
+                    <div className="flex min-w-0 flex-1 items-start gap-4">
+                        <div className="flex size-14 shrink-0 items-center justify-center rounded-[22px] border border-[#611f69]/40 bg-[#611f69]/18 text-sm font-semibold text-[#e8d4eb]">
+                            {getInitials(message.sender?.email || 'Unknown sender')}
                         </div>
-                        <p className="mt-2 text-sm text-slate-600">
-                            Channel: {message.channel?.name || 'Unknown channel'}
-                        </p>
-                        <p className="mt-3 rounded-[20px] bg-[#fbf8fb] px-4 py-3 text-sm leading-6 text-slate-700">
-                            {message.body || 'Image-only message'}
-                        </p>
-                        <p className="mt-2 text-xs text-slate-500">
-                            {formatDate(message.createdAt)}
-                        </p>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <p className="text-lg font-semibold text-[#f8f8f8]">
+                                    {message.sender?.email || 'Unknown sender'}
+                                </p>
+                                <AdminPill tone={message.deletedAt ? 'rose' : 'emerald'}>
+                                    {message.deletedAt ? 'Deleted' : 'Live'}
+                                </AdminPill>
+                            </div>
+                            <p className="mt-2 text-sm text-[#c9b8cc]">
+                                Channel: {message.channel?.name || 'Unknown channel'}
+                            </p>
+                            <p className="mt-3 break-words rounded-[22px] border border-[#611f69]/22 bg-[#350d36]/30 px-4 py-4 text-sm leading-7 text-[#ebe6ed]">
+                                {message.body || 'Image-only message'}
+                            </p>
+                            <p className="mt-3 text-xs uppercase tracking-[0.14em] text-[#a49ba8]">
+                                {formatDate(message.createdAt)}
+                            </p>
+                        </div>
                     </div>
 
                     <Button
                         size="sm"
-                        variant="destructive"
-                        className="rounded-full"
+                        className="shrink-0 rounded-full bg-[#E01E5A] text-white hover:bg-[#c9184a]"
                         onClick={() => onDelete(message._id)}
                         disabled={isDeleting || !!message.deletedAt}
                     >

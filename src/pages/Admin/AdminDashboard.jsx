@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 
+import { useFetchWorkspace } from '@/hooks/apis/workspaces/useFetchWorkspace';
 import { AdminConfirmationDialog } from './components/AdminConfirmationDialog';
 import { AdminContentSkeleton } from './components/AdminContentSkeleton';
 import { AdminDashboardLoader } from './components/AdminDashboardLoader';
@@ -8,7 +8,6 @@ import { AdminHeader } from './components/AdminHeader';
 import { AdminMetricGrid } from './components/AdminMetricGrid';
 import { AdminMobileSectionNav } from './components/AdminMobileSectionNav';
 import { AdminOverviewActivity } from './components/AdminOverviewActivity';
-import { AdminOverviewHero } from './components/AdminOverviewHero';
 import { AdminSidebar } from './components/AdminSidebar';
 import { AuditTrailSection } from './components/AuditTrailSection';
 import { MessageModerationSection } from './components/MessageModerationSection';
@@ -66,7 +65,7 @@ const renderActiveSection = ({
                         ? openConfirmation({
                             title: 'Suspend user?',
                             description:
-                                'Are you sure? This action cannot be undone from the user side.',
+                                'This will immediately block the user from normal access until restored.',
                             actionLabel: 'Suspend User',
                             onConfirm: () => onToggleUserStatus(user)
                         })
@@ -89,7 +88,7 @@ const renderActiveSection = ({
                     openConfirmation({
                         title: 'Delete workspace?',
                         description:
-                            'Are you sure? This action cannot be undone.',
+                            'This permanently removes the workspace and cannot be undone.',
                         actionLabel: 'Delete Workspace',
                         onConfirm: () => onDeleteWorkspace(workspaceId)
                     })
@@ -109,7 +108,7 @@ const renderActiveSection = ({
                     openConfirmation({
                         title: 'Delete message?',
                         description:
-                            'Are you sure? This action cannot be undone.',
+                            'This removes the content from the conversation history for users.',
                         actionLabel: 'Delete Message',
                         onConfirm: () => onDeleteMessage(messageId)
                     })
@@ -138,16 +137,17 @@ const renderActiveSection = ({
 };
 
 export const AdminDashboard = () => {
-    const navigate = useNavigate();
     const {
         activeSection,
         activeSectionLabel,
         auditLogs,
         auditLogsPagination,
+        canSearch,
         cards,
         changeSection,
         closeConfirmation,
         confirmation,
+        currentSearch,
         isBootstrapping,
         isDeletingMessage,
         isDeletingWorkspace,
@@ -159,18 +159,20 @@ export const AdminDashboard = () => {
         messages,
         messagesPagination,
         metrics,
-        onDeleteMessage,
-        onDeleteWorkspace,
-        onToggleUserAdmin,
-        onToggleUserPlan,
-        onToggleUserStatus,
-        onToggleWorkspaceArchive,
+        deleteMessage: onDeleteMessage,
+        deleteWorkspace: onDeleteWorkspace,
+        toggleUserAdmin: onToggleUserAdmin,
+        toggleUserPlan: onToggleUserPlan,
+        toggleUserStatus: onToggleUserStatus,
+        toggleWorkspaceArchive: onToggleWorkspaceArchive,
         openConfirmation,
         overview,
         payments,
         paymentsPagination,
+        searchPlaceholder,
         sections,
         setCurrentPage,
+        setCurrentSearch,
         users,
         usersPagination,
         workspaces,
@@ -186,6 +188,9 @@ export const AdminDashboard = () => {
         workspaces
     }), [activeSection, auditLogs, messages, metrics, payments, users, workspaces]);
 
+    const { workspaces: userWorkspaces } = useFetchWorkspace();
+    const firstWorkspaceId = userWorkspaces?.[0]?._id;
+
     if (isBootstrapping) {
         return <AdminDashboardLoader />;
     }
@@ -200,41 +205,48 @@ export const AdminDashboard = () => {
     };
 
     return (
-        <div className="h-dvh overflow-hidden bg-[radial-gradient(circle_at_top,#6a1f6a,#481349_42%,#25092b_100%)] text-slate-100">
-            <div className="flex h-full">
+        <div className="relative flex h-dvh min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[#0a060c] text-[#f8f8f8] lg:flex-row">
+            <div
+                className="pointer-events-none absolute inset-0 bg-[linear-gradient(165deg,#1a0d1c_0%,#0a060c_55%)]"
+                aria-hidden
+            />
+
+            <div className="relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col lg:flex-row">
                 <AdminSidebar
                     sections={sections}
                     activeSection={activeSection}
                     onSectionChange={changeSection}
+                    metrics={metrics}
                 />
 
-                <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-[#350d36] bg-[#120a14] lg:border-l">
                     <AdminHeader
                         activeSectionLabel={activeSectionLabel}
                         canExport={Boolean(exportPayload?.rows?.length)}
+                        canSearch={canSearch}
+                        currentSearch={currentSearch}
+                        firstWorkspaceId={firstWorkspaceId}
                         isSectionFetching={isSectionFetching}
                         onExportExcel={() => exportAdminRowsToExcel(exportPayload)}
                         onExportPdf={() => exportAdminRowsToPdf(exportPayload)}
+                        onSearchChange={setCurrentSearch}
+                        searchPlaceholder={searchPlaceholder}
                     />
 
-                    <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 lg:px-6">
-                        <div className="mx-auto max-w-7xl space-y-6">
+                    <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto [contain:content]">
+                        <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-5 px-4 py-5 sm:px-5 sm:py-6 lg:gap-6 lg:px-6 lg:pb-8">
                             <AdminMobileSectionNav
                                 sections={sections}
                                 activeSection={activeSection}
                                 onSectionChange={changeSection}
                             />
 
-                            {activeSection === 'dashboard' && (
-                                <AdminOverviewHero
-                                    metrics={metrics}
-                                    cards={cards}
-                                    onGoWorkspaces={() => changeSection('workspaces')}
-                                    onMakePayment={() => navigate('/makepayment')}
-                                />
-                            )}
+                            <section aria-label="Key metrics">
+                                <h2 className="sr-only">Platform metrics</h2>
+                                <AdminMetricGrid cards={cards} />
+                            </section>
 
-                            <AdminMetricGrid cards={cards} />
+                            <section aria-label="Section content" className="min-h-[200px]">
                             {isSectionLoading ? (
                                 <AdminContentSkeleton />
                             ) : (
@@ -265,6 +277,7 @@ export const AdminDashboard = () => {
                                     workspacesPagination
                                 })
                             )}
+                            </section>
                         </div>
                     </main>
                 </div>

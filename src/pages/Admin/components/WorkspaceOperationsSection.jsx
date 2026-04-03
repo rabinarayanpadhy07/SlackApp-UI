@@ -3,6 +3,7 @@ import { Archive, ArchiveRestore, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     formatDate,
+    getInitials,
     innerCardClass
 } from '../utils/adminDashboardUtils';
 import { AdminEmptyState } from './AdminEmptyState';
@@ -21,14 +22,14 @@ export const WorkspaceOperationsSection = ({
 }) => (
     <AdminSectionCard
         title="Workspace Operations"
-        description="Archive, restore, or permanently delete workspaces."
-        contentClassName="grid gap-4 xl:grid-cols-2"
+        description="Archive, restore, or permanently delete workspaces from a cleaner lifecycle view."
+        contentClassName="grid min-w-0 gap-4 md:gap-5 xl:grid-cols-2 2xl:grid-cols-3"
     >
         {workspaces.length === 0 && (
-            <div className="xl:col-span-2">
+            <div className="xl:col-span-2 2xl:col-span-3">
                 <AdminEmptyState
                     title="No matching workspaces"
-                    description="Try a different search term."
+                    description="Try a different search term to find the workspace you need."
                 />
             </div>
         )}
@@ -37,22 +38,27 @@ export const WorkspaceOperationsSection = ({
             <div key={workspace._id} className={innerCardClass}>
                 <div className="flex h-full flex-col p-5">
                     <div className="flex items-start justify-between gap-4">
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-semibold text-[#311333]">{workspace.name}</p>
-                                <AdminPill tone={workspace.isArchived ? 'amber' : 'emerald'}>
-                                    {workspace.isArchived ? 'Archived' : 'Active'}
-                                </AdminPill>
+                        <div className="flex items-start gap-4">
+                            <div className="flex size-14 shrink-0 items-center justify-center rounded-[22px] border border-[#2EB67D]/30 bg-[#2EB67D]/12 text-sm font-semibold text-[#b8efd4]">
+                                {getInitials(workspace.name)}
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">
-                                {workspace.description || 'No description yet.'}
-                            </p>
+                            <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="text-lg font-semibold text-[#f8f8f8]">{workspace.name}</p>
+                                    <AdminPill tone={workspace.isArchived ? 'amber' : 'emerald'}>
+                                        {workspace.isArchived ? 'Archived' : 'Active'}
+                                    </AdminPill>
+                                </div>
+                                <p className="mt-2 text-sm leading-7 text-[#c9b8cc]">
+                                    {workspace.description || 'No description yet.'}
+                                </p>
+                            </div>
                         </div>
 
                         <Button
                             size="iconSm"
                             variant="ghost"
-                            className="text-rose-600 hover:text-rose-700"
+                            className="rounded-full text-[#fb9fb8] hover:bg-[#E01E5A]/15 hover:text-[#fce7f0]"
                             onClick={() => onDelete(workspace._id)}
                             disabled={isDeleting}
                         >
@@ -60,17 +66,25 @@ export const WorkspaceOperationsSection = ({
                         </Button>
                     </div>
 
-                    <div className="mt-4 grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-                        <p>Owner: {workspace.owner?.email || 'Unknown'}</p>
-                        <p>Members: {workspace.memberCount}</p>
-                        <p>Channels: {workspace.channelCount}</p>
-                        <p>Created: {formatDate(workspace.createdAt)}</p>
+                    <div className="mt-5 grid gap-3 text-sm text-[#c9b8cc] sm:grid-cols-2">
+                        <div className="rounded-[20px] border border-[#611f69]/22 bg-[#350d36]/30 px-4 py-3">
+                            Owner: {workspace.owner?.email || 'Unknown'}
+                        </div>
+                        <div className="rounded-[20px] border border-[#611f69]/22 bg-[#350d36]/30 px-4 py-3">
+                            Members: {workspace.memberCount}
+                        </div>
+                        <div className="rounded-[20px] border border-[#611f69]/22 bg-[#350d36]/30 px-4 py-3">
+                            Channels: {workspace.channelCount}
+                        </div>
+                        <div className="rounded-[20px] border border-[#611f69]/22 bg-[#350d36]/30 px-4 py-3">
+                            Created: {formatDate(workspace.createdAt)}
+                        </div>
                     </div>
 
-                    <div className="mt-4">
+                    <div className="mt-5">
                         <Button
                             size="sm"
-                            className="rounded-full bg-[#1264a3] text-white hover:bg-[#0f5489]"
+                            className="rounded-full bg-[linear-gradient(90deg,#611f69,#36C5F0)] text-white hover:opacity-95"
                             onClick={() => onToggleArchive(workspace)}
                             disabled={isUpdating}
                         >
@@ -86,7 +100,7 @@ export const WorkspaceOperationsSection = ({
             </div>
         ))}
 
-        <div className="xl:col-span-2">
+        <div className="xl:col-span-2 2xl:col-span-3">
             <AdminPagination pagination={pagination} onPageChange={onPageChange} />
         </div>
     </AdminSectionCard>

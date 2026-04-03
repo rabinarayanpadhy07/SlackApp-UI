@@ -1,27 +1,39 @@
+import { CreditCard, ScrollText } from 'lucide-react';
+
 import { AdminSectionCard } from './AdminSectionCard';
 import { AdminPill } from './AdminPill';
-import { formatCurrency, formatDate, innerCardClass } from '../utils/adminDashboardUtils';
+import {
+    formatCurrency,
+    formatDate,
+    getInitials,
+    innerCardClass
+} from '../utils/adminDashboardUtils';
 
 export const AdminOverviewActivity = ({ overview }) => (
-    <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.15fr_0.85fr]">
+    <div className="grid min-w-0 gap-6 lg:grid-cols-2 lg:gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] 2xl:gap-10">
         <AdminSectionCard
             title="Recent Users"
-            description="Newest accounts and their current access state."
+            description="Newest accounts, plan status, and access posture."
         >
             {(overview?.recentUsers || []).map((user) => (
                 <div key={user._id} className={innerCardClass}>
-                    <div className="flex flex-col gap-3 p-5 xl:flex-row xl:items-center xl:justify-between">
-                        <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-semibold text-[#311333]">{user.username}</p>
-                                <AdminPill tone={user.plan === 'Paid' ? 'amber' : 'slate'}>
-                                    {user.plan}
-                                </AdminPill>
-                                {user.isSuperAdmin && <AdminPill tone="sky">Super Admin</AdminPill>}
+                    <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex items-start gap-4">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#36C5F0]/30 bg-[#36C5F0]/12 text-sm font-semibold text-[#a5e9fc]">
+                                {getInitials(user.username || user.email)}
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">{user.email}</p>
+                            <div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-semibold text-[#f8f8f8]">{user.username}</p>
+                                    <AdminPill tone={user.plan === 'Paid' ? 'amber' : 'slate'}>
+                                        {user.plan}
+                                    </AdminPill>
+                                    {user.isSuperAdmin && <AdminPill tone="sky">Super Admin</AdminPill>}
+                                </div>
+                                <p className="mt-2 text-sm text-[#c9b8cc]">{user.email}</p>
+                            </div>
                         </div>
-                        <p className="text-xs text-slate-500">{formatDate(user.createdAt)}</p>
+                        <p className="text-xs text-[#a49ba8]">{formatDate(user.createdAt)}</p>
                     </div>
                 </div>
             ))}
@@ -30,22 +42,27 @@ export const AdminOverviewActivity = ({ overview }) => (
         <div className="space-y-6">
             <AdminSectionCard
                 title="Recent Payments"
-                description="Latest successful and pending platform payments."
+                description="Latest successful and pending platform transactions."
             >
                 {(overview?.recentPayments || []).map((payment) => (
                     <div key={payment._id} className={innerCardClass}>
                         <div className="flex items-center justify-between gap-4 p-5">
-                            <div>
-                                <p className="font-semibold text-[#311333]">
-                                    {payment.user?.email || 'Unlinked payment'}
-                                </p>
-                                <p className="mt-1 text-xs text-slate-500">{payment.orderId}</p>
+                            <div className="flex items-start gap-4">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#2EB67D]/30 bg-[#2EB67D]/12 text-[#b8efd4]">
+                                    <CreditCard className="size-4" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-[#f8f8f8]">
+                                        {payment.user?.email || 'Unlinked payment'}
+                                    </p>
+                                    <p className="mt-1 text-xs text-[#a49ba8]">{payment.orderId}</p>
+                                </div>
                             </div>
                             <div className="text-right">
-                                <p className="font-semibold text-[#311333]">
+                                <p className="font-semibold text-[#f8f8f8]">
                                     {formatCurrency(payment.amount)}
                                 </p>
-                                <p className="text-xs text-slate-500">{payment.status}</p>
+                                <p className="text-xs text-[#a49ba8]">{payment.status}</p>
                             </div>
                         </div>
                     </div>
@@ -54,19 +71,24 @@ export const AdminOverviewActivity = ({ overview }) => (
 
             <AdminSectionCard
                 title="Recent Audit Logs"
-                description="Most recent administrative actions."
+                description="Most recent high-impact administrative actions."
             >
                 {(overview?.recentAuditLogs || []).map((log) => (
                     <div key={log._id} className={innerCardClass}>
-                        <div className="p-5">
-                            <div className="flex flex-wrap items-center gap-2">
-                                <p className="font-semibold text-[#311333]">{log.action}</p>
-                                <AdminPill tone="sky">{log.targetType}</AdminPill>
+                        <div className="flex items-start gap-4 p-5">
+                            <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl border border-[#611f69]/40 bg-[#611f69]/18 text-[#e8d4eb]">
+                                <ScrollText className="size-4" />
                             </div>
-                            <p className="mt-2 text-sm text-slate-600">
-                                {log.actor?.email || 'System'}
-                            </p>
-                            <p className="mt-1 text-xs text-slate-500">{formatDate(log.createdAt)}</p>
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-semibold text-[#f8f8f8]">{log.action}</p>
+                                    <AdminPill tone="sky">{log.targetType}</AdminPill>
+                                </div>
+                                <p className="mt-2 text-sm text-[#c9b8cc]">
+                                    {log.actor?.email || 'System'}
+                                </p>
+                                <p className="mt-1 text-xs text-[#a49ba8]">{formatDate(log.createdAt)}</p>
+                            </div>
                         </div>
                     </div>
                 ))}

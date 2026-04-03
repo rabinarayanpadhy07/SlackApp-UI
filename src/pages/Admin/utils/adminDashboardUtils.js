@@ -1,8 +1,9 @@
+/** Slack-inspired admin surfaces (no backdrop-blur — better scroll performance) */
 export const shellCardClass =
-    'overflow-hidden rounded-[28px] border border-white/10 bg-[#3e1141]/72 shadow-[0_24px_80px_-34px_rgba(9,4,12,0.75)] backdrop-blur';
+    'relative overflow-hidden rounded-2xl border border-[#611f69]/25 bg-[#120a14]/95 shadow-sm';
 
 export const innerCardClass =
-    'rounded-[24px] border border-[#e7dcea] bg-white/96 shadow-[0_18px_50px_-34px_rgba(74,21,75,0.35)]';
+    'group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a0d1c]/95 shadow-sm';
 
 export const formatCurrency = (amount = 0) =>
     new Intl.NumberFormat('en-IN', {
@@ -19,47 +20,82 @@ export const formatDate = (value) =>
         }).format(new Date(value))
         : 'N/A';
 
+export const getInitials = (value = '') =>
+    value
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0]?.toUpperCase())
+        .join('') || 'AD';
+
+export const ADMIN_SECTION_META = {
+    'audit-logs': {
+        eyebrow: 'Trust and compliance',
+        description: 'Track high-impact changes, investigate activity, and keep a clear paper trail.'
+    },
+    dashboard: {
+        eyebrow: 'Operations overview',
+        description: 'Watch growth, moderation, billing, and workspace health from one live control room.'
+    },
+    moderation: {
+        eyebrow: 'Safety operations',
+        description: 'Review recent conversations, remove risky content, and respond quickly to incidents.'
+    },
+    payments: {
+        eyebrow: 'Revenue visibility',
+        description: 'Monitor subscription payments, order activity, and platform cashflow in real time.'
+    },
+    users: {
+        eyebrow: 'Customer governance',
+        description: 'Manage plan status, admin access, and account health without leaving the dashboard.'
+    },
+    workspaces: {
+        eyebrow: 'Workspace lifecycle',
+        description: 'Archive, restore, and retire workspaces with a cleaner operational workflow.'
+    }
+};
+
 export const getAdminMetricCards = (metrics = {}) => [
     {
         label: 'Users',
         value: metrics.totalUsers ?? 0,
-        hint: `${metrics.totalPaidUsers ?? 0} paid accounts`,
+        hint: `${metrics.totalPaidUsers ?? 0} premium accounts`,
         iconKey: 'users',
-        bar: 'bg-[#36c5f0]'
+        bar: 'from-[#36C5F0] to-[#611f69]'
     },
     {
         label: 'Paid',
         value: metrics.totalPaidUsers ?? 0,
-        hint: 'Upgraded customer seats',
+        hint: 'Revenue-generating customers',
         iconKey: 'crown',
-        bar: 'bg-[#ecb22e]'
+        bar: 'from-[#ECB22E] to-[#f59e0b]'
     },
     {
         label: 'Suspended',
         value: metrics.totalSuspendedUsers ?? 0,
-        hint: 'Restricted accounts',
+        hint: 'Accounts under restriction',
         iconKey: 'shieldBan',
-        bar: 'bg-[#e01e5a]'
+        bar: 'from-[#E01E5A] to-[#be185d]'
     },
     {
         label: 'Workspaces',
         value: metrics.totalWorkspaces ?? 0,
         hint: `${metrics.totalArchivedWorkspaces ?? 0} archived`,
         iconKey: 'building',
-        bar: 'bg-[#2eb67d]'
+        bar: 'from-[#2EB67D] to-[#0d9488]'
     },
     {
         label: 'Archived',
         value: metrics.totalArchivedWorkspaces ?? 0,
-        hint: 'Recoverable workspaces',
+        hint: 'Recoverable organizations',
         iconKey: 'archive',
-        bar: 'bg-[#1264a3]'
+        bar: 'from-[#611f69] to-[#4A154B]'
     },
     {
         label: 'Revenue',
         value: formatCurrency(metrics.grossRevenue),
-        hint: `${metrics.totalPayments ?? 0} payments tracked`,
+        hint: `${metrics.totalPayments ?? 0} payments recorded`,
         iconKey: 'revenue',
-        bar: 'bg-[#611f69]'
+        bar: 'from-[#611f69] via-[#36C5F0] to-[#2EB67D]'
     }
 ];

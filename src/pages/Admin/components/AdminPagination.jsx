@@ -8,7 +8,7 @@ export const AdminPagination = ({ pagination, onPageChange }) => {
     }
 
     return (
-        <div className="flex items-center justify-between rounded-[20px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/78">
+        <div className="flex flex-col gap-3 rounded-[24px] border border-[#611f69]/25 bg-[#350d36]/35 px-4 py-4 text-sm text-[#d1cbd4] sm:flex-row sm:items-center sm:justify-between">
             <p>
                 Page {pagination.page} of {pagination.totalPages}
             </p>
@@ -16,7 +16,7 @@ export const AdminPagination = ({ pagination, onPageChange }) => {
                 <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-full border-white/10 bg-white/10 text-white hover:bg-white/15"
+                    className="rounded-full border-[#611f69]/35 bg-[#350d36]/40 text-[#ebe6ed] hover:bg-[#611f69]/25"
                     onClick={() => onPageChange(pagination.page - 1)}
                     disabled={pagination.page <= 1}
                 >
@@ -26,7 +26,7 @@ export const AdminPagination = ({ pagination, onPageChange }) => {
                 <Button
                     size="sm"
                     variant="outline"
-                    className="rounded-full border-white/10 bg-white/10 text-white hover:bg-white/15"
+                    className="rounded-full border-[#611f69]/35 bg-[#350d36]/40 text-[#ebe6ed] hover:bg-[#611f69]/25"
                     onClick={() => onPageChange(pagination.page + 1)}
                     disabled={pagination.page >= pagination.totalPages}
                 >
