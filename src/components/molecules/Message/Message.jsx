@@ -1,10 +1,11 @@
+import { SmilePlus, MessageSquareText, MoreHorizontal, Pin, Trash, Edit, Star, PinOff, Sparkles, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+
 import { MessageImageThumbnail } from '@/components/atoms/MessageImageThumbnail/MessageImageThumbnail';
 import { MessageRenderer } from '@/components/atoms/MessageRenderer/MessageRenderer';
 import { Avatar, AvatarFallback,AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Hint } from '@/components/atoms/Hint/Hint';
-import { SmilePlus, MessageSquareText, MoreHorizontal, Pin, Trash, Edit, Star, PinOff, Sparkles, Loader2 } from 'lucide-react';
-import { useState } from 'react';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { Editor } from '@/components/atoms/Editor/Edtior';

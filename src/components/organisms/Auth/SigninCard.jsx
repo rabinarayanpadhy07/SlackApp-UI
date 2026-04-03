@@ -79,6 +79,16 @@ export const SigninCard = ({
                     </Button>
                 </form>
 
+                <div className="mt-3 text-right">
+                    <button
+                        type="button"
+                        className="text-sm text-sky-600 hover:underline"
+                        onClick={() => navigate('/auth/forgot-password')}
+                    >
+                        Forgot password?
+                    </button>
+                </div>
+
                 <Separator className='my-5' />
 
                 <div className="flex flex-col gap-y-2.5">

@@ -1,6 +1,5 @@
 import path from 'path';
 import { fileURLToPath } from 'url';
-
 import basicSsl from '@vitejs/plugin-basic-ssl';
 import tailwind from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
@@ -15,6 +14,11 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+  test: {
+    environment: 'jsdom',
+    globals: true,
+    setupFiles: './src/test/setup.js'
   },
   build: {
     rollupOptions: {

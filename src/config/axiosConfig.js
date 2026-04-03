@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+import { reportClientError } from '@/lib/monitoring';
 import { BACKEND_API_URL } from './runtimeConfig';
 
 const axiosInstance = axios.create({
@@ -19,5 +20,19 @@ axiosInstance.interceptors.request.use((config) => {
 
     return config;
 });
+
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        reportClientError(error, {
+            source: 'axios.response',
+            url: error?.config?.url,
+            method: error?.config?.method,
+            status: error?.response?.status
+        });
+
+        return Promise.reject(error);
+    }
+);
 
 export default axiosInstance;

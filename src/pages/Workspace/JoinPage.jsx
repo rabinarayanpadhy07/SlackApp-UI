@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowRightIcon, HashIcon, Loader2Icon, SearchIcon, UsersIcon } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import VerificationInput from 'react-verification-input';
 import { toast } from 'sonner';
@@ -23,7 +23,7 @@ export const JoinPage = () => {
 
     const isBusy = isPending || isResolving;
 
-    async function handleAddMemberToWorkspace(joinCode) {
+    const handleAddMemberToWorkspace = useCallback(async (joinCode) => {
         try {
             setIsResolving(true);
 
@@ -60,7 +60,7 @@ export const JoinPage = () => {
         } finally {
             setIsResolving(false);
         }
-    }
+    }, [auth?.token, joinWorkspaceMutation, navigate, queryClient, workspaceId]);
 
     useEffect(() => {
         const inviteCode = searchParams.get('code')?.toUpperCase();
@@ -70,7 +70,7 @@ export const JoinPage = () => {
 
         hasTriedInviteLink.current = true;
         handleAddMemberToWorkspace(inviteCode);
-    }, [searchParams]);
+    }, [handleAddMemberToWorkspace, searchParams]);
 
     return (
         <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#611f69,_#4a154b_38%,_#2c0f30_78%)] px-4 py-10">

@@ -1,4 +1,5 @@
 import axios from 'axios';
+
 import axiosConfig from '../../config/axiosConfig';
 
 export const uploadImageToAWSpresignedUrl = async ({ url, file }) => {

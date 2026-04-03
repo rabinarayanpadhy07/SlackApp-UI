@@ -1,6 +1,7 @@
 import { Loader2Icon, TriangleAlertIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { ChannelHeader } from '@/components/molecules/Channel/ChannelHeader';
 import { ChatInput } from '@/components/molecules/ChatInput/ChatInput';
@@ -11,7 +12,6 @@ import { useAuth } from '@/hooks/context/useAuth';
 import { useGetDirectMessages } from '@/hooks/apis/direct-messages/useGetDirectMessages';
 import { useSendDirectMessage } from '@/hooks/apis/direct-messages/useSendDirectMessage';
 import { getPreginedUrl, uploadImageToAWSpresignedUrl } from '@/apis/s3';
-import { useQueryClient } from '@tanstack/react-query';
 
 export const DirectMessage = () => {
 

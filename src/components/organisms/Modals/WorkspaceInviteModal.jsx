@@ -1,9 +1,9 @@
 import { CopyIcon, RefreshCcwIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useResetJoinCode } from '@/hooks/apis/workspaces/useResetJoinCode';
-import { toast } from 'sonner';
 
 export const WorkspaceInviteModal = ({ openInviteModal, setOpenInviteModal, workspaceName, joinCode, workspaceId }) => {
     

@@ -25,6 +25,14 @@ const GoogleAuthSuccess = lazyNamed(
   () => import('@/pages/Auth/GoogleAuthSuccess'),
   'GoogleAuthSuccess'
 );
+const ForgotPasswordPage = lazyNamed(
+  () => import('@/pages/Auth/ForgotPasswordPage'),
+  'ForgotPasswordPage'
+);
+const ResetPasswordPage = lazyNamed(
+  () => import('@/pages/Auth/ResetPasswordPage'),
+  'ResetPasswordPage'
+);
 const Home = lazyNamed(() => import('@/pages/Home/Home'), 'Home');
 const Notfound = lazyNamed(() => import('@/pages/Notfound/Notfound'), 'Notfound');
 const Payments = lazyNamed(() => import('@/pages/Payments/Payments'), 'Payments');
@@ -77,6 +85,8 @@ export const AppRoutes = () => {
               <Route path="/workspaces/create" element={<ProtectedRoute><CreateWorkspacePage /></ProtectedRoute>} />
               <Route path="/auth/signup" element={<Auth><SignupContainer /></Auth>} />
               <Route path="/auth/signin" element={<Auth><SigninContainer /></Auth>} />
+              <Route path="/auth/forgot-password" element={<Auth><ForgotPasswordPage /></Auth>} />
+              <Route path="/auth/reset-password" element={<Auth><ResetPasswordPage /></Auth>} />
               <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
               <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><SuperAdminRoute><AdminDashboard /></SuperAdminRoute></ProtectedRoute>} />

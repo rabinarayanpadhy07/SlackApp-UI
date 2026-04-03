@@ -1,6 +1,4 @@
 import { useEffect, useRef } from 'react';
-
-import { Button } from '@/components/ui/button';
 import {
     Captions,
     FileText,
@@ -16,6 +14,8 @@ import {
     Video,
     VideoOff
 } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 
 const VideoStream = ({ stream, isLocal }) => {
     const videoRef = useRef();

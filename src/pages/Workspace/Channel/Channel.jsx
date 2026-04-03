@@ -16,7 +16,6 @@ import { useSocket } from '@/hooks/context/useSocket';
 import { useMarkChannelAsRead } from '@/hooks/apis/read-receipts/useMarkChannelAsRead';
 import { useWebRTC } from '@/hooks/webrtc/useWebRTC';
 import { buildEditorDraftFromText } from '@/utils/aiDraft';
-
 import { useAuth } from '@/hooks/context/useAuth';
 
 export const Channel = () => {

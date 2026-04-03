@@ -1,7 +1,8 @@
-import { useCaptureOrder } from "@/hooks/apis/payments/useCaptureOrder";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+
+import { useCaptureOrder } from "@/hooks/apis/payments/useCaptureOrder";
 
 const loadRazorpayScript = (src) => {
     return new Promise((res) => {
@@ -25,60 +26,59 @@ export const RenderRazorpayPopup = ({
     currency,
     amount,
  }) => {
-
-    console.log('RenderRazorpayPopup', orderId, keyId, currency, amount);
     const navigate = useNavigate();
 
     const { captureOrderMutation } = useCaptureOrder();
-    
-    const display = async (options) => {
-        const scriptResponse = await loadRazorpayScript('https://checkout.razorpay.com/v1/checkout.js');
-        if(!scriptResponse) {
-            console.log('Error in loading script');
-            return;
-        }
-
-        const rzp = new window.Razorpay(options);
-
-        rzp.on('payment.failed',async function (response){
-            console.log('Payment failed', response.error.code);
-            toast.error('Payment failed', {
-                description: response?.error?.description || 'Please try again.'
-            });
-            await captureOrderMutation({
-                orderId: options.order_id,
-                status: 'failed',
-                paymentId: '',
-            });
-        });
-
-        rzp.open();
-    }
 
     useEffect(() => {
-        display({
-            key: keyId,
-            amount,
-            currency,
-            name: "RABI NARAYAN PADHY", // name of the company
-            description: "Test Transaction",
-            order_id: orderId,
-            handler: async (response) => {
-                console.log('Payment success', response);
-                console.log('Signature', response.razorpay_signature);
-                const result = await captureOrderMutation({
-                    orderId: orderId,
-                    status: 'success',
-                    paymentId: response.razorpay_payment_id,
-                    signature: response.razorpay_signature
-                });
+        let isMounted = true;
 
-                if (result) {
-                    navigate('/home');
-                }
+        const display = async () => {
+            const scriptResponse = await loadRazorpayScript('https://checkout.razorpay.com/v1/checkout.js');
+            if(!scriptResponse || !isMounted) {
+                return;
             }
-        })
-        
+
+            const rzp = new window.Razorpay({
+                key: keyId,
+                amount,
+                currency,
+                name: "RABI NARAYAN PADHY",
+                description: "Test Transaction",
+                order_id: orderId,
+                handler: async (response) => {
+                    const result = await captureOrderMutation({
+                        orderId,
+                        status: 'success',
+                        paymentId: response.razorpay_payment_id,
+                        signature: response.razorpay_signature
+                    });
+
+                    if (result) {
+                        navigate('/home');
+                    }
+                }
+            });
+
+            rzp.on('payment.failed', async (response) => {
+                toast.error('Payment failed', {
+                    description: response?.error?.description || 'Please try again.'
+                });
+                await captureOrderMutation({
+                    orderId,
+                    status: 'failed',
+                    paymentId: '',
+                });
+            });
+
+            rzp.open();
+        };
+
+        display();
+
+        return () => {
+            isMounted = false;
+        };
     }, [amount, captureOrderMutation, currency, keyId, navigate, orderId]);
 
     return null;

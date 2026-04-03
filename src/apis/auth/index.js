@@ -26,3 +26,28 @@ export const signInRequest = async ({ email, password }) => {
         throw error.response.data;     
     }
 };
+
+export const forgotPasswordRequest = async ({ email }) => {
+    try {
+        const response = await axios.post('/users/forgot-password', {
+            email
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error.response?.data || error;
+    }
+};
+
+export const resetPasswordRequest = async ({ token, password }) => {
+    try {
+        const response = await axios.post('/users/reset-password', {
+            token,
+            password
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error.response?.data || error;
+    }
+};

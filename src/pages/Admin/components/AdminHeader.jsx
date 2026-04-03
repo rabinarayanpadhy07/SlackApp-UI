@@ -1,11 +1,18 @@
-import { LogOutIcon, SquareDashedMousePointer } from 'lucide-react';
+import { DownloadIcon, FileSpreadsheetIcon, LogOutIcon, SquareDashedMousePointer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useFetchWorkspace } from '@/hooks/apis/workspaces/useFetchWorkspace';
 import { useAuth } from '@/hooks/context/useAuth';
 
-export const AdminHeader = ({ activeSectionLabel, isSectionFetching }) => {
+export const AdminHeader = ({
+    activeSectionLabel,
+    canExport,
+    isSectionFetching,
+    onExportExcel,
+    onExportPdf
+}) => {
     const navigate = useNavigate();
     const { logout } = useAuth();
     const { workspaces } = useFetchWorkspace();
@@ -14,6 +21,20 @@ export const AdminHeader = ({ activeSectionLabel, isSectionFetching }) => {
     const handleLogout = async () => {
         await logout();
         navigate('/auth/signin', { replace: true });
+    };
+
+    const handleExportExcel = async () => {
+        const didExport = await onExportExcel?.();
+        if (!didExport) {
+            toast.info('Nothing to export in this section yet.');
+        }
+    };
+
+    const handleExportPdf = async () => {
+        const didExport = await onExportPdf?.();
+        if (!didExport) {
+            toast.info('Nothing to export in this section yet.');
+        }
     };
 
     return (
@@ -51,6 +72,28 @@ export const AdminHeader = ({ activeSectionLabel, isSectionFetching }) => {
                         >
                             Open Workspace
                         </Button>
+                    ) : null}
+                    {canExport ? (
+                        <>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+                                onClick={handleExportExcel}
+                            >
+                                <FileSpreadsheetIcon className="size-4" />
+                                Export Excel
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+                                onClick={handleExportPdf}
+                            >
+                                <DownloadIcon className="size-4" />
+                                Export PDF
+                            </Button>
+                        </>
                     ) : null}
                     <Button
                         size="sm"

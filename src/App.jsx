@@ -1,13 +1,14 @@
 import './App.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 
+import { AppErrorFallback } from '@/components/AppErrorFallback';
 import { Modals } from '@/components/organisms/Modals/Modals';
 import { AppContextProvider } from '@/context/AppContextProvider';
 import { AppRoutes } from '@/Routes';
-import { Toaster } from 'sonner';
-
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { ClientErrorBoundary, reportClientError } from '@/lib/monitoring';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,16 +22,25 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AppContextProvider>
-        <TooltipProvider>
-          <AppRoutes />
-          <Modals />
-        </TooltipProvider>
-        {/* <WorkspacePreferencesModal /> */}
-      </AppContextProvider>
-      <Toaster position="bottom-right" richColors />
-    </QueryClientProvider>
+    <ClientErrorBoundary
+      fallback={<AppErrorFallback />}
+      onError={(error, componentStack) => {
+        reportClientError(error, {
+          source: 'react.error-boundary',
+          componentStack
+        });
+      }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <AppContextProvider>
+          <TooltipProvider>
+            <AppRoutes />
+            <Modals />
+          </TooltipProvider>
+        </AppContextProvider>
+        <Toaster position="bottom-right" richColors />
+      </QueryClientProvider>
+    </ClientErrorBoundary>
   );
 }
 

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { AdminConfirmationDialog } from './components/AdminConfirmationDialog';
@@ -15,6 +16,11 @@ import { PaymentsSection } from './components/PaymentsSection';
 import { UserManagementSection } from './components/UserManagementSection';
 import { WorkspaceOperationsSection } from './components/WorkspaceOperationsSection';
 import { useAdminDashboardData } from './hooks/useAdminDashboardData';
+import {
+    exportAdminRowsToExcel,
+    exportAdminRowsToPdf,
+    getAdminExportPayload
+} from './utils/adminExportUtils';
 
 const renderActiveSection = ({
     activeSection,
@@ -171,6 +177,15 @@ export const AdminDashboard = () => {
         workspacesPagination
     } = useAdminDashboardData();
 
+    const exportPayload = useMemo(() => getAdminExportPayload(activeSection, {
+        auditLogs,
+        messages,
+        metrics,
+        payments,
+        users,
+        workspaces
+    }), [activeSection, auditLogs, messages, metrics, payments, users, workspaces]);
+
     if (isBootstrapping) {
         return <AdminDashboardLoader />;
     }
@@ -196,7 +211,10 @@ export const AdminDashboard = () => {
                 <div className="flex min-w-0 flex-1 flex-col">
                     <AdminHeader
                         activeSectionLabel={activeSectionLabel}
+                        canExport={Boolean(exportPayload?.rows?.length)}
                         isSectionFetching={isSectionFetching}
+                        onExportExcel={() => exportAdminRowsToExcel(exportPayload)}
+                        onExportPdf={() => exportAdminRowsToPdf(exportPayload)}
                     />
 
                     <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 lg:px-6">

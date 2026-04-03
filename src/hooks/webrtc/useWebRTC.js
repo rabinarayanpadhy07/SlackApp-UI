@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '../context/useAuth';
 import { useSocket } from '../context/useSocket';
@@ -6,6 +6,13 @@ import { useSocket } from '../context/useSocket';
 const getSpeechRecognition = () => {
     if (typeof window === 'undefined') return null;
     return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+};
+
+const ICE_SERVERS = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:global.stun.twilio.com:3478' }
+    ]
 };
 
 export const useWebRTC = (channelId, hasAiAccess = false) => {
@@ -36,14 +43,7 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         transcriptSegmentsRef.current = transcriptSegments;
     }, [transcriptSegments]);
 
-    const iceServers = {
-        iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:global.stun.twilio.com:3478' }
-        ]
-    };
-
-    const stopSpeechRecognition = () => {
+    const stopSpeechRecognition = useCallback(() => {
         shouldRestartRecognitionRef.current = false;
 
         if (recognitionRef.current) {
@@ -53,9 +53,9 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
             recognitionRef.current.stop();
             recognitionRef.current = null;
         }
-    };
+    }, []);
 
-    const startSpeechRecognition = () => {
+    const startSpeechRecognition = useCallback(() => {
         const SpeechRecognition = getSpeechRecognition();
 
         if (!hasAiAccess || !isAiEnabledForSession || !SpeechRecognition || !socket || !auth?.user?._id || !auth?.token) return;
@@ -112,9 +112,9 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         } catch {
             recognitionRef.current = null;
         }
-    };
+    }, [auth?.token, auth?.user?._id, auth?.user?.username, channelId, hasAiAccess, isAiEnabledForSession, socket, stopSpeechRecognition]);
 
-    const requestSummary = async () => {
+    const requestSummary = useCallback(async () => {
         if (!socket || !hasAiAccess || !isAiEnabledForSession || !auth?.token) return null;
 
         setIsSummarizing(true);
@@ -132,9 +132,9 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
                 resolve(null);
             });
         });
-    };
+    }, [auth?.token, channelId, hasAiAccess, isAiEnabledForSession, socket]);
 
-    const startHuddle = async ({ enableAi = false } = {}) => {
+    const startHuddle = useCallback(async ({ enableAi = false } = {}) => {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
 
@@ -157,9 +157,9 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         } catch (error) {
             console.error('Error accessing hardware media devices', error);
         }
-    };
+    }, [auth?.user, channelId, hasAiAccess, isAudioEnabled, isVideoEnabled, socket]);
 
-    const stopHuddle = async () => {
+    const stopHuddle = useCallback(async () => {
         if (transcriptSegmentsRef.current.length > 0) {
             await requestSummary();
         }
@@ -177,10 +177,10 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         setIsSharingScreen(false);
         setIsCaptionsEnabled(false);
         setIsAiEnabledForSession(false);
-    };
+    }, [channelId, requestSummary, socket, stopSpeechRecognition]);
 
-    const createPeer = (targetSocketId, user) => {
-        const peer = new RTCPeerConnection(iceServers);
+    const createPeer = useCallback((targetSocketId, user) => {
+        const peer = new RTCPeerConnection(ICE_SERVERS);
 
         localStreamRef.current?.getTracks().forEach((track) => {
             peer.addTrack(track, localStreamRef.current);
@@ -204,7 +204,7 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
 
         peersRef.current[targetSocketId] = peer;
         return peer;
-    };
+    }, [socket]);
 
     useEffect(() => {
         if (!socket || !isHuddleActive) return;
@@ -259,7 +259,7 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
             socket.off('huddle-ice-candidate', handleIceCandidate);
             socket.off('user-left-huddle', handleUserLeft);
         };
-    }, [socket, isHuddleActive, auth?.user, channelId]);
+    }, [socket, isHuddleActive, auth?.user, channelId, createPeer]);
 
     useEffect(() => {
         if (!socket) return;
@@ -302,11 +302,11 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         return () => {
             stopSpeechRecognition();
         };
-    }, [hasAiAccess, isAiEnabledForSession, isHuddleActive, isCaptionsEnabled, isCaptionsSupported, socket, channelId, auth?.user?._id, auth?.token]);
+    }, [auth?.token, auth?.user?._id, channelId, hasAiAccess, isAiEnabledForSession, isCaptionsEnabled, isCaptionsSupported, isHuddleActive, socket, startSpeechRecognition, stopSpeechRecognition]);
 
     useEffect(() => () => {
         stopSpeechRecognition();
-    }, []);
+    }, [stopSpeechRecognition]);
 
     const toggleAudio = () => {
         setIsAudioEnabled((prev) => {

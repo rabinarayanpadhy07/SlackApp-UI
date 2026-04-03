@@ -10,30 +10,24 @@ import { useWorkspacePreferencesModal } from '@/hooks/context/useWorkspacePrefer
 
 
 export const WorkspacePanelHeader = ({ workspace }) => {
-
-    console.log('workspace is', workspace);
-
     const [openInviteModal, setOpenInviteModal] = useState(false);
     const [openMembersModal, setOpenMembersModal] = useState(false);
 
-    const { setWorkspace } = useWorkspacePreferencesModal();
+    const {
+        setWorkspace,
+        setOpenPreferences,
+        setInitialValue
+    } = useWorkspacePreferencesModal();
 
     const workspacemembers = workspace?.members;
 
     const { auth } = useAuth();
 
-    console.log(auth);
-
     const isLoggedInUserAdminOfWorkspace = workspacemembers?.find(member => member.memberId._id === auth?.user?._id && member.role === 'admin');
-
-    console.log(isLoggedInUserAdminOfWorkspace);
-
-
-    const { setOpenPreferences, setInitialValue } = useWorkspacePreferencesModal();
 
     useEffect(() => {
         setWorkspace(workspace);
-    }, []);
+    }, [setWorkspace, workspace]);
 
     return (
         <>
