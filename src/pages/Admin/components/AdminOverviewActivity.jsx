@@ -3,7 +3,7 @@ import { AdminPill } from './AdminPill';
 import { formatCurrency, formatDate, innerCardClass } from '../utils/adminDashboardUtils';
 
 export const AdminOverviewActivity = ({ overview }) => (
-    <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+    <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.15fr_0.85fr]">
         <AdminSectionCard
             title="Recent Users"
             description="Newest accounts and their current access state."

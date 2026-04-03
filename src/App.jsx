@@ -9,10 +9,17 @@ import { Toaster } from 'sonner';
 
 import { TooltipProvider } from '@/components/ui/tooltip';
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30 * 1000,
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+});
+
 function App() {
-
-const queryClient = new QueryClient();
-
   return (
     <QueryClientProvider client={queryClient}>
       <AppContextProvider>

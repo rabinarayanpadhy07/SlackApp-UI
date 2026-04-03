@@ -110,7 +110,7 @@ export const DirectMessage = () => {
                                 queryFn: () => getPreginedUrl({ token: auth?.token }),
                             });
 
-                            const responseAws = await uploadImageToAWSpresignedUrl({
+                            await uploadImageToAWSpresignedUrl({
                                 url: preSignedUrl,
                                 file: image
                             });

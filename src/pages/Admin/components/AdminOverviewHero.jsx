@@ -1,30 +1,24 @@
 import {
     Building2,
     Crown,
+    ArrowRightIcon,
     ShieldBan,
     Users
 } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { formatCurrency } from '../utils/adminDashboardUtils';
 
-export const AdminOverviewHero = ({ metrics, cards }) => (
+export const AdminOverviewHero = ({ metrics, cards, onGoWorkspaces, onMakePayment }) => (
     <>
-        <section className="rounded-[30px] border border-white/10 bg-black/18 px-5 py-4 shadow-[0_24px_80px_-36px_rgba(0,0,0,0.72)] backdrop-blur lg:px-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <section className="rounded-[30px] border border-white/10 bg-black/18 px-4 py-4 shadow-[0_24px_80px_-36px_rgba(0,0,0,0.72)] backdrop-blur lg:px-6">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <div className="flex items-center gap-4">
                     <div className="grid grid-cols-2 gap-1 rounded-2xl bg-white/10 p-2">
                         <span className="h-3 w-3 rounded-full bg-[#36c5f0]" />
                         <span className="h-3 w-3 rounded-full bg-[#2eb67d]" />
                         <span className="h-3 w-3 rounded-full bg-[#ecb22e]" />
                         <span className="h-3 w-3 rounded-full bg-[#e01e5a]" />
-                    </div>
-                    <div>
-                        <p className="text-xs uppercase tracking-[0.22em] text-white/55">
-                            Slack Style Admin
-                        </p>
-                        <h1 className="text-2xl font-semibold tracking-tight text-white">
-                            Super Admin Control Center
-                        </h1>
                     </div>
                 </div>
 
@@ -42,8 +36,29 @@ export const AdminOverviewHero = ({ metrics, cards }) => (
             </div>
         </section>
 
+        <section className="flex flex-col gap-3 rounded-[26px] border border-white/10 bg-white/5 px-5 py-4 backdrop-blur sm:flex-row sm:items-center sm:justify-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <Button
+                    type="button"
+                    onClick={() => onGoWorkspaces?.()}
+                    className="w-full rounded-full bg-white text-[#4a154b] hover:bg-white/90 sm:w-auto"
+                >
+                    Go to Workspaces
+                </Button>
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onMakePayment?.()}
+                    className="w-full rounded-full border-white/20 bg-white/5 text-white hover:bg-white/10 sm:w-auto"
+                >
+                    Make Payment
+                    <ArrowRightIcon className="ml-1.5 size-4" />
+                </Button>
+            </div>
+        </section>
+
         <section className="grid gap-6 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(135deg,#6f2b70_0%,#4a154b_52%,#321137_100%)] p-8 shadow-[0_30px_90px_-42px_rgba(11,5,12,0.82)]">
+            <div className="overflow-hidden rounded-[34px] border border-white/10 bg-[linear-gradient(135deg,#6f2b70_0%,#4a154b_52%,#321137_100%)] p-6 sm:p-8 shadow-[0_30px_90px_-42px_rgba(11,5,12,0.82)]">
                 <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.16em]">
                     <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-white/80">
                         Premium workspace governance
@@ -110,7 +125,7 @@ export const AdminOverviewHero = ({ metrics, cards }) => (
                         Live operational snapshot
                     </h3>
                 </div>
-                <div className="grid gap-3 p-4">
+                <div className="grid gap-3 p-4 sm:p-5">
                     {cards.slice(0, 4).map(({ label, value, hint, bar, iconKey }) => {
                         const iconMap = {
                             building: Building2,

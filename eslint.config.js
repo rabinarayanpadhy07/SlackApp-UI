@@ -7,8 +7,13 @@ import tseslint from "@typescript-eslint/eslint-plugin";
 import tsParser from "@typescript-eslint/parser";
 import unusedImports from "eslint-plugin-unused-imports";
 import prettier from "eslint-config-prettier";
+import globals from "globals";
 
 export default [
+  {
+    ignores: ["dist/**", "node_modules/**"],
+  },
+
   js.configs.recommended,
 
   {
@@ -20,6 +25,10 @@ export default [
         ecmaVersion: "latest",
         sourceType: "module",
         ecmaFeatures: { jsx: true },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.es2024,
       },
     },
 
@@ -62,6 +71,15 @@ export default [
           "newlines-between": "always",
         },
       ],
+    },
+  },
+
+  {
+    files: ["vite.config.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
 

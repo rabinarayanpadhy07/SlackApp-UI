@@ -3,6 +3,7 @@ import { io } from 'socket.io-client';
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { BACKEND_SOCKET_URL } from '@/config/runtimeConfig';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useChannelMessages } from '@/hooks/context/useChannelMessages';
 
@@ -28,7 +29,7 @@ export const SocketContextProvider = ({ children }) => {
     const [activeHuddleChannel, setActiveHuddleChannel] = useState(null);
 
     // Persist single socket connection across re-renders
-    const [socket] = useState(() => io(import.meta.env.VITE_BACKEND_SOCKET_URL));
+    const [socket] = useState(() => io(BACKEND_SOCKET_URL, { autoConnect: true }));
 
     useEffect(() => {
         const handleNewMessage = (data) => {
@@ -148,7 +149,7 @@ export const SocketContextProvider = ({ children }) => {
             socket.off('HUDDLE_STARTED', handleHuddleStarted);
             socket.off('HUDDLE_ENDED', handleHuddleEnded);
         };
-    }, [socket, queryClient, setMessageList, auth, activeHuddleChannel]);
+    }, [socket, queryClient, setMessageList, auth]);
 
     async function joinChannel(channelId) {
         socket.emit('JoinChannel', { channelId }, (data) => {

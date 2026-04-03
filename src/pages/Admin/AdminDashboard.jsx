@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 import { AdminConfirmationDialog } from './components/AdminConfirmationDialog';
 import { AdminContentSkeleton } from './components/AdminContentSkeleton';
 import { AdminDashboardLoader } from './components/AdminDashboardLoader';
@@ -12,7 +14,6 @@ import { MessageModerationSection } from './components/MessageModerationSection'
 import { PaymentsSection } from './components/PaymentsSection';
 import { UserManagementSection } from './components/UserManagementSection';
 import { WorkspaceOperationsSection } from './components/WorkspaceOperationsSection';
-import { useAuth } from '@/hooks/context/useAuth';
 import { useAdminDashboardData } from './hooks/useAdminDashboardData';
 
 const renderActiveSection = ({
@@ -131,18 +132,16 @@ const renderActiveSection = ({
 };
 
 export const AdminDashboard = () => {
-    const { auth } = useAuth();
+    const navigate = useNavigate();
     const {
         activeSection,
         activeSectionLabel,
         auditLogs,
         auditLogsPagination,
-        canSearch,
         cards,
         changeSection,
         closeConfirmation,
         confirmation,
-        currentSearch,
         isBootstrapping,
         isDeletingMessage,
         isDeletingWorkspace,
@@ -164,10 +163,8 @@ export const AdminDashboard = () => {
         overview,
         payments,
         paymentsPagination,
-        searchPlaceholder,
         sections,
         setCurrentPage,
-        setCurrentSearch,
         users,
         usersPagination,
         workspaces,
@@ -188,7 +185,7 @@ export const AdminDashboard = () => {
     };
 
     return (
-        <div className="h-screen overflow-hidden bg-[radial-gradient(circle_at_top,_#6a1f6a,_#481349_42%,_#25092b_100%)] text-slate-100">
+        <div className="h-dvh overflow-hidden bg-[radial-gradient(circle_at_top,#6a1f6a,#481349_42%,#25092b_100%)] text-slate-100">
             <div className="flex h-full">
                 <AdminSidebar
                     sections={sections}
@@ -199,12 +196,7 @@ export const AdminDashboard = () => {
                 <div className="flex min-w-0 flex-1 flex-col">
                     <AdminHeader
                         activeSectionLabel={activeSectionLabel}
-                        canSearch={canSearch}
                         isSectionFetching={isSectionFetching}
-                        profile={auth?.user}
-                        searchValue={currentSearch}
-                        searchPlaceholder={searchPlaceholder}
-                        onSearchChange={(event) => setCurrentSearch(event.target.value)}
                     />
 
                     <main className="min-h-0 flex-1 overflow-y-auto px-4 py-6 lg:px-6">
@@ -216,7 +208,12 @@ export const AdminDashboard = () => {
                             />
 
                             {activeSection === 'dashboard' && (
-                                <AdminOverviewHero metrics={metrics} cards={cards} />
+                                <AdminOverviewHero
+                                    metrics={metrics}
+                                    cards={cards}
+                                    onGoWorkspaces={() => changeSection('workspaces')}
+                                    onMakePayment={() => navigate('/makepayment')}
+                                />
                             )}
 
                             <AdminMetricGrid cards={cards} />

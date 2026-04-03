@@ -1,8 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwind from '@tailwindcss/vite'
-import path from 'path'
-import basicSsl from '@vitejs/plugin-basic-ssl'
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import basicSsl from '@vitejs/plugin-basic-ssl';
+import tailwind from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,8 +16,27 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom', '@tanstack/react-query'],
+          editor: ['quill', 'quill-mention'],
+          realtime: ['socket.io-client'],
+          icons: ['lucide-react', 'react-icons'],
+          radix: [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-separator',
+            '@radix-ui/react-slot',
+            '@radix-ui/react-toast',
+            '@radix-ui/react-tooltip'
+          ]
+        }
+      }
+    }
+  },
   server: {
     host: '0.0.0.0',
     port: 5173
   }
-})
+});

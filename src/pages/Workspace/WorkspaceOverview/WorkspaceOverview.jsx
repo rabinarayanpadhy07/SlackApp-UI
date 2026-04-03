@@ -22,7 +22,7 @@ export const WorkspaceOverview = () => {
 
     if (isFetching) {
         return (
-            <div className="h-full flex flex-col items-center justify-center gap-4">
+            <div className="h-full flex flex-col items-center justify-center gap-4 px-4 text-center">
                 <Loader2Icon className="size-8 animate-spin text-primary" />
                 <p className="text-sm text-muted-foreground">Loading workspace...</p>
             </div>
@@ -32,11 +32,11 @@ export const WorkspaceOverview = () => {
     const hasChannels = workspace?.channels?.length > 0;
 
     return (
-        <div className="h-full flex flex-col items-center justify-center p-8 text-center max-w-md mx-auto">
-            <div className="rounded-2xl bg-muted/50 p-6 mb-6 flex items-center justify-center">
-                <HashIcon className="size-16 text-muted-foreground/60" />
+        <div className="h-full w-full flex flex-col items-center justify-center px-4 py-10 text-center max-w-md mx-auto">
+            <div className="rounded-2xl bg-muted/50 px-6 py-6 mb-6 flex items-center justify-center">
+                <HashIcon className="size-14 sm:size-16 text-muted-foreground/60" />
             </div>
-            <h2 className="text-xl font-semibold text-foreground mb-2">
+            <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-2">
                 {workspace?.name ?? 'Workspace'}
             </h2>
             <p className="text-muted-foreground text-sm mb-6">
@@ -64,7 +64,7 @@ export const WorkspaceOverview = () => {
                 <Button
                     variant="outline"
                     onClick={() => navigate(`/workspaces/${workspaceId}/threads`)}
-                    className="gap-2"
+                    className="w-full sm:w-auto gap-2 justify-center"
                 >
                     <MessageSquareTextIcon className="size-4" />
                     View Threads

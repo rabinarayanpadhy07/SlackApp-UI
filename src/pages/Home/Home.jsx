@@ -11,15 +11,17 @@ export const Home = () => {
     const navigate = useNavigate();
     const { auth } = useAuth();
     const currentPlan = auth?.user?.plan === 'Paid' ? 'Paid' : 'Normal';
+    const hasWorkspaces = workspaces?.length > 0;
+    const firstWorkspaceId = workspaces?.[0]?._id;
 
     useEffect(() => {
         if (auth?.isLoading || isFetching) return;
-        if (!auth?.user?.isSuperAdmin && workspaces?.length > 0) {
-            navigate(`/workspaces/${workspaces[0]._id}`);
+        if (!auth?.user?.isSuperAdmin && firstWorkspaceId) {
+            navigate(`/workspaces/${firstWorkspaceId}`);
         }
-    }, [auth?.isLoading, auth?.user?.isSuperAdmin, isFetching, navigate, workspaces]);
+    }, [auth?.isLoading, auth?.user?.isSuperAdmin, firstWorkspaceId, isFetching, navigate]);
 
-    if (auth?.isLoading || isFetching || (!auth?.user?.isSuperAdmin && workspaces?.length > 0)) {
+    if (auth?.isLoading || isFetching || (!auth?.user?.isSuperAdmin && firstWorkspaceId)) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_#6c2a6b,_#4a154b_45%,_#2b0f30_100%)] p-6">
                 <div className="w-full max-w-lg rounded-[28px] border border-white/10 bg-white/10 p-8 text-center text-white shadow-[0_24px_80px_-36px_rgba(0,0,0,0.55)] backdrop-blur">
@@ -59,6 +61,12 @@ export const Home = () => {
                             <UsersIcon className="mr-2 size-4" />
                             Join workspace
                         </Button>
+                        {firstWorkspaceId ? (
+                            <Button variant="outline" className="h-12 rounded-full border-emerald-300/30 bg-emerald-300/10 text-white hover:bg-emerald-300/20" onClick={() => navigate(`/workspaces/${firstWorkspaceId}`)}>
+                                Open latest workspace
+                                <ArrowRightIcon className="ml-2 size-4" />
+                            </Button>
+                        ) : null}
                         {auth?.user?.isSuperAdmin ? (
                             <Button variant="outline" className="h-12 rounded-full border-amber-300/30 bg-amber-300/10 text-white hover:bg-amber-300/20" onClick={() => navigate('/admin')}>
                                 <ShieldIcon className="mr-2 size-4" />
@@ -111,6 +119,30 @@ export const Home = () => {
                                     ? 'Unlimited workspaces and channels are active on this account.'
                                     : 'Normal users can create 1 workspace and up to 2 channels per workspace, but can still join other workspaces they are invited to.'}
                             </p>
+                        </div>
+                        <div className="rounded-3xl border border-slate-200 p-5">
+                            <p className="font-medium text-slate-900">Your workspaces</p>
+                            {hasWorkspaces ? (
+                                <div className="mt-3 space-y-2">
+                                    {workspaces.slice(0, 5).map((workspace) => (
+                                        <button
+                                            key={workspace._id}
+                                            type="button"
+                                            onClick={() => navigate(`/workspaces/${workspace._id}`)}
+                                            className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left transition hover:border-[#611f69]/30 hover:bg-[#f9f3fb]"
+                                        >
+                                            <span className="min-w-0 truncate font-medium text-slate-900">
+                                                {workspace.name}
+                                            </span>
+                                            <ArrowRightIcon className="size-4 text-[#611f69]" />
+                                        </button>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="mt-2 text-slate-500">
+                                    No workspaces yet. Create one or join with an invite code.
+                                </p>
+                            )}
                         </div>
                     </div>
                 </section>

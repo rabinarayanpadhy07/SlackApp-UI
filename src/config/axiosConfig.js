@@ -1,7 +1,10 @@
 import axios from 'axios';
 
+import { BACKEND_API_URL } from './runtimeConfig';
+
 const axiosInstance = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_API_URL
+    baseURL: BACKEND_API_URL,
+    timeout: 10000
 });
 
 axiosInstance.interceptors.request.use((config) => {

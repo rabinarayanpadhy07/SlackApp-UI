@@ -34,6 +34,8 @@ export const Editor = ({
     const onTextChangeRef = useRef(onTextChange);
     const submitRef = useRef(null);
     const lastAppliedSeedRef = useRef(null);
+    const workspaceMembersRef = useRef(workspaceMembers);
+    const workspaceChannelsRef = useRef(workspaceChannels);
 
     useEffect(() => {
         try {
@@ -46,6 +48,11 @@ export const Editor = ({
     useEffect(() => {
         onTextChangeRef.current = onTextChange;
     }, [onTextChange]);
+
+    useEffect(() => {
+        workspaceMembersRef.current = workspaceMembers;
+        workspaceChannelsRef.current = workspaceChannels;
+    }, [workspaceChannels, workspaceMembers]);
 
     function toggleToolbar() {
         setIsToolbarVisible(!isToolbarVisible);
@@ -90,6 +97,7 @@ export const Editor = ({
 
         const options = {
             theme: 'snow',
+            placeholder,
             modules: {
                 mention: {
                     allowedChars: /^[A-Za-z0-9_\s]*$/,
@@ -99,9 +107,12 @@ export const Editor = ({
                         let values;
 
                         if (mentionChar === "@") {
-                            values = workspaceMembers.map(m => ({ id: m.memberId?._id, value: m.memberId?.username })).filter(m => m.id);
+                            values = workspaceMembersRef.current
+                                .map(m => ({ id: m.memberId?._id, value: m.memberId?.username }))
+                                .filter(m => m.id);
                         } else {
-                            values = workspaceChannels.map(c => ({ id: c._id, value: c.name }));
+                            values = workspaceChannelsRef.current
+                                .map(c => ({ id: c._id, value: c.name }));
                         }
 
                         if (searchTerm.length === 0) {
@@ -139,7 +150,7 @@ export const Editor = ({
                         shift_enter: {
                             key: 'Enter',
                             shiftKey: true,
-                            handler: (range, context) => {
+                            handler: (range) => {
                                 quill.insertText(range.index, '\n');
                                 quill.setSelection(range.index + 1);
                                 return false;
@@ -169,7 +180,7 @@ export const Editor = ({
             toolbar.classList.add('hidden');
         }
 
-    }, []);
+    }, [placeholder]);
 
     useEffect(() => {
         if (!quillRef.current || !seedValue || seedValue === lastAppliedSeedRef.current) return;
