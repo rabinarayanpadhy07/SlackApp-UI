@@ -26,7 +26,7 @@ export const SigninCard = ({
                     Welcome back
                 </CardTitle>
                 <CardDescription className="text-sm leading-6 sm:text-base">
-                    Sign in to continue to WorkSync
+                    Sign in to continue to SlackApp
                 </CardDescription>
             </CardHeader>
 
