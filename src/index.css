@@ -13,9 +13,10 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --color-slack: #5c3B58;
-  --color-slack-dark: #481349;
-  --color-slack-medium: #5E2C5F;
+  --color-slack: linear-gradient(135deg, #4d1baa, #2a1e4a);
+  --color-slack-dark: #2a1e4a;
+  --color-slack-medium: #4d1baa;
+  --color-slack-light: #f0ebf8;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -135,8 +136,8 @@
   }
 
   body {
-    @apply text-foreground bg-[#481349];
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    @apply text-foreground bg-[#2a1e4a];
+    font-family: "Plus Jakarta Sans", sans-serif;
   }
 }
 
@@ -167,6 +168,11 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+/* Background Gradient Classes */
+.bg-slack {
+  background: var(--color-slack);
+}
+
 /* ============================= */
 /* Quill Editor Custom Styling   */
 /* ============================= */
@@ -190,11 +196,11 @@
   .ql-container {
     border: none !important;
     height: unset !important;
-    font-family: 'Lato', sans-serif !important;
+    font-family: "Lato", sans-serif !important;
   }
 
   .ql-editor {
-    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-family: "Plus Jakarta Sans", sans-serif !important;
     font-size: 15px !important;
     line-height: 1.6 !important;
     padding: 12px 16px !important;
@@ -216,7 +222,7 @@
 
   .ql-editor:before {
     left: 12px !important;
-    font-family: 'Lato', sans-serif !important;
+    font-family: "Lato", sans-serif !important;
     font-style: normal !important;
     font-weight: 400 !important;
     color: #8d8d8d !important;
@@ -236,7 +242,8 @@
     border: 1px solid #e5e7eb !important;
     border-radius: 6px !important;
     padding: 12px !important;
-    font-family: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace !important;
+    font-family:
+      "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", monospace !important;
     font-size: 13px !important;
     color: #111827 !important;
     overflow-x: auto !important;
@@ -254,7 +261,7 @@
     margin: 0 1px !important;
     text-decoration: none !important;
   }
-  
+
   .mention:hover {
     @apply underline;
   }
@@ -272,7 +279,8 @@
     @apply px-4 py-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer transition-colors;
   }
 
-  .ql-mention-list-item:hover, .ql-mention-list-item.selected {
+  .ql-mention-list-item:hover,
+  .ql-mention-list-item.selected {
     @apply bg-blue-600 text-white dark:bg-blue-600 dark:text-white font-medium;
   }
 }

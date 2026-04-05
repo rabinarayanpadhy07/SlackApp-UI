@@ -1,5 +1,4 @@
 import { LucideLoader2, TriangleAlert } from 'lucide-react';
-import { FaCheck } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,10 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { buildGoogleAuthUrl } from '@/utils/buildGoogleAuthUrl';
 
-export const SignupCard = ({ 
-    signupForm, 
-    setSignupForm, 
-    validationError, 
+export const SignupCard = ({
+    signupForm,
+    setSignupForm,
+    validationError,
     onSignupFormSubmit,
     error,
     isPending,
@@ -22,105 +21,123 @@ export const SignupCard = ({
     const navigate = useNavigate();
 
     return (
-        <Card classname="w-full h-full">
-            <CardHeader>
-                <CardTitle>Sign Up</CardTitle>
-                <CardDescription>Sign up to access your account</CardDescription>
+        <Card className="mx-auto w-full max-w-sm rounded-2xl shadow-xl sm:max-w-md">
+            <CardHeader className="text-center space-y-2">
+                <CardTitle className="text-xl sm:text-2xl font-bold">
+                    Create your account
+                </CardTitle>
+                <CardDescription className="text-sm sm:text-base">
+                    Join thousands of teams on SlackApp
+                </CardDescription>
 
                 {validationError && (
-                    <div className='bg-destructive/15 p-4 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6'>
+                    <div className='bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive'>
                         <TriangleAlert className='size-5' />
                         <p>{validationError.message}</p>
                     </div>
                 )}
 
                 {error && (
-                    <div className='bg-destructive/15 p-4 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6'>
+                    <div className='bg-destructive/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-destructive'>
                         <TriangleAlert className='size-5' />
                         <p>{error.message}</p>
                     </div>
                 )}
 
                 {isSuccess && (
-                    <div className='bg-primary/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-primary mb-5'>  
-                        <FaCheck className='size-5' />
-                        <p>
-                            Successfully signed up. You will be redirected to the login page in a few seconds.
-                            <LucideLoader2 className="animate-spin ml-2" />
-                        </p>
+                    <div className='bg-primary/15 p-3 rounded-md flex items-center justify-center gap-x-2 text-sm text-primary'>
+                        <div className='flex flex-col items-center gap-2'>
+                            <p>Successfully signed up. Redirecting...</p>
+                            <LucideLoader2 className="animate-spin" />
+                        </div>
                     </div>
                 )}
             </CardHeader>
+
             <CardContent>
+                {/* Google Button */}
+                <Button
+                    className="relative mb-4 w-full cursor-pointer disabled:cursor-not-allowed"
+                    disabled={isPending}
+                    onClick={() => {
+                        window.location.href = buildGoogleAuthUrl();
+                    }}
+                    variant="outline"
+                    size="lg"
+                >
+                    <FcGoogle className="size-5 absolute left-3" />
+                    Continue with Google
+                </Button>
+
+                <div className="flex items-center gap-2 my-4">
+                    <Separator className="flex-1" />
+                    <span className="text-sm text-muted-foreground">or</span>
+                    <Separator className="flex-1" />
+                </div>
+
+                {/* Form */}
                 <form className='space-y-3' onSubmit={onSignupFormSubmit}>
+                    <Input
+                        placeholder="Username"
+                        required
+                        value={signupForm.username}
+                        onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
+                        disabled={isPending}
+                    />
+
                     <Input
                         placeholder="Email"
                         required
-                        onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
-                        value={signupForm.email}
                         type="email"
+                        value={signupForm.email}
+                        onChange={(e) => setSignupForm({ ...signupForm, email: e.target.value })}
                         disabled={isPending}
                     />
+
                     <Input
                         placeholder="Password"
                         required
-                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
-                        value={signupForm.password}
                         type="password"
+                        value={signupForm.password}
+                        onChange={(e) => setSignupForm({ ...signupForm, password: e.target.value })}
                         disabled={isPending}
                     />
+
                     <Input
                         placeholder="Confirm Password"
                         required
-                        onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
-                        value={signupForm.confirmPassword}
                         type="password"
-                        disabled={false}
-                    />
-                    <Input
-                        placeholder="Your username"
-                        required
-                        onChange={(e) => setSignupForm({ ...signupForm, username: e.target.value })}
-                        value={signupForm.username}
-                        type="text"
+                        value={signupForm.confirmPassword}
+                        onChange={(e) => setSignupForm({ ...signupForm, confirmPassword: e.target.value })}
                         disabled={isPending}
                     />
-                    <Button 
+
+                    {/* Terms */}
+                    <div className="flex items-center gap-2 text-sm mt-2">
+                        <input type="checkbox" required className="cursor-pointer" />
+                        <p>
+                            I agree to the <span className="text-purple-600 cursor-pointer">Terms & Conditions</span>
+                        </p>
+                    </div>
+
+                    <Button
                         disabled={isPending}
                         size="lg"
                         type="submit"
-                        className="w-full"
+                        className="mt-2 w-full cursor-pointer bg-[#4d1baa] hover:bg-[#4d1baa] disabled:cursor-not-allowed"
                     >
-                        Continue
+                        Create Account
                     </Button>
                 </form>
 
-                <Separator className="my-5" />
-
-                <div className="flex flex-col gap-y-2.5">
-                    <Button
-                        className="w-full relative"
-                        disabled={isPending}
-                        onClick={() => {
-                            window.location.href = buildGoogleAuthUrl();
-                        }}
-                        variant="outline"
-                        size="lg"
-                    >
-                        <FcGoogle className="size-5 absolute left-2.5 top-2.5" />
-                        Continue with Google
-                    </Button>
-                </div>
-
-                <p
-                    className='text-s text-muted-foreground mt-4'
-                >
-                    Already have an account ? {' '}
-                    <span 
-                        className='text-sky-600 hover:underline cursor-pointer'
+                {/* Sign in */}
+                <p className='text-sm text-muted-foreground mt-4 text-center'>
+                    Already have an account?{' '}
+                    <span
+                        className='text-[#4d1baa] hover:underline cursor-pointer'
                         onClick={() => navigate('/auth/signin')}
                     >
-                        Sign In
+                        Sign in
                     </span>
                 </p>
             </CardContent>

@@ -1,5 +1,4 @@
 import { LucideLoader2, TriangleAlert } from 'lucide-react';
-import { FaCheck } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,103 +17,134 @@ export const SigninCard = ({
     isSuccess,
     isPending
 }) => {
-
     const navigate = useNavigate();
 
-    
-
     return (
-        <Card className="w-full h-full">
-            <CardHeader>
-                <CardTitle>Sign In</CardTitle>
-                <CardDescription>Sign in to access your account</CardDescription>
+        <Card className="mx-auto w-full max-w-sm rounded-2xl border-0 shadow-xl sm:max-w-md">
+            <CardHeader className="space-y-2 px-5 pt-5 text-center sm:px-6 sm:pt-6">
+                <CardTitle className="text-xl font-bold sm:text-2xl">
+                    Welcome back
+                </CardTitle>
+                <CardDescription className="text-sm leading-6 sm:text-base">
+                    Sign in to continue to WorkSync
+                </CardDescription>
+            </CardHeader>
 
+            <CardContent className="px-5 pb-5 sm:px-6 sm:pb-6">
                 {validationError && (
-                    <div className='bg-destructive/15 p-4 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6'>
-                        <TriangleAlert className='size-5' />
-                        <p>{validationError.message}</p>
+                    <div className="mb-3 flex items-start gap-2.5 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                        <TriangleAlert className="mt-0.5 size-5 shrink-0" />
+                        <p className="break-words">{validationError.message}</p>
                     </div>
                 )}
 
                 {error && (
-                    <div className='bg-destructive/15 p-4 rounded-md flex items-center gap-x-2 text-sm text-destructive mb-6'>
-                        <TriangleAlert className='size-5' />
-                        <p>{error.message}</p>
+                    <div className="mb-3 flex items-start gap-2.5 rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+                        <TriangleAlert className="mt-0.5 size-5 shrink-0" />
+                        <p className="break-words">{error.message}</p>
                     </div>
                 )}
 
                 {isSuccess && (
-                    <div className='bg-primary/15 p-3 rounded-md flex items-center gap-x-2 text-sm text-primary mb-5'>  
-                        <FaCheck className='size-5' />
-                        <p>
-                            Successfully signed in. You will be redirected to the home page in a few seconds.
-                            <LucideLoader2 className="animate-spin ml-2" />
-                        </p>
+                    <div className="mb-3 flex flex-col items-center justify-center rounded-md bg-primary/15 p-4 text-center text-sm text-primary">
+                        <LucideLoader2 className="mb-2 size-5 animate-spin" />
+                        <p>Successfully signed in. Redirecting...</p>
                     </div>
                 )}
 
-            </CardHeader>
+                <Button
+                    className="mb-4 flex h-11 w-full cursor-pointer items-center justify-center gap-2 px-4 text-sm sm:text-base disabled:cursor-not-allowed"
+                    disabled={isPending}
+                    onClick={() => {
+                        window.location.href = buildGoogleAuthUrl();
+                    }}
+                    variant="outline"
+                    size="lg"
+                >
+                    {isPending ? (
+                        <LucideLoader2 className="size-5 animate-spin" />
+                    ) : (
+                        <>
+                            <FcGoogle className="size-5 shrink-0" />
+                            <span className="truncate">Continue with Google</span>
+                        </>
+                    )}
+                </Button>
 
-            <CardContent>
-                <form className='space-y-3' onSubmit={onSigninFormSubmit}>
-                    <Input
-                        disabled={isPending}
-                        placeholder="Email"
-                        required
-                        type="email"
-                        value={signinForm.email}
-                        onChange={(e) => setSigninForm({ ...signinForm, email: e.target.value })}
-                    />
-                    <Input
-                        disabled={isPending}
-                        placeholder="Password"
-                        required
-                        type="password"
-                        value={signinForm.password}
-                        onChange={(e) => setSigninForm({ ...signinForm, password: e.target.value })}
-                    />
+                <div className="my-4 flex items-center gap-2">
+                    <Separator className="flex-1" />
+                    <span className="text-xs text-muted-foreground sm:text-sm">or</span>
+                    <Separator className="flex-1" />
+                </div>
 
-                    <Button className="w-full" disabled={isPending} size="lg" type="submit">    
-                        Continue
+                <form className="space-y-4" onSubmit={onSigninFormSubmit}>
+                    <div>
+                        <label className="mb-1.5 block text-sm font-medium">Email</label>
+                        <Input
+                            disabled={isPending}
+                            placeholder="you@example.com"
+                            required
+                            type="email"
+                            value={signinForm.email}
+                            onChange={(e) =>
+                                setSigninForm({ ...signinForm, email: e.target.value })
+                            }
+                        />
+                    </div>
+
+                    <div>
+                        <label className="mb-1.5 block text-sm font-medium">Password</label>
+                        <Input
+                            disabled={isPending}
+                            placeholder="••••••••"
+                            required
+                            type="password"
+                            value={signinForm.password}
+                            onChange={(e) =>
+                                setSigninForm({ ...signinForm, password: e.target.value })
+                            }
+                        />
+                    </div>
+
+                    <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                        <label className="flex items-center gap-2 leading-none">
+                            <input type="checkbox" className="cursor-pointer" />
+                            <span>Remember me</span>
+                        </label>
+
+                        <button
+                            type="button"
+                            className="cursor-pointer self-end text-right text-[#4B2AAD] hover:underline"
+                            onClick={() => navigate('/auth/forgot-password')}
+                        >
+                            Forgot password?
+                        </button>
+                    </div>
+
+                    <Button
+                        className="mt-2 flex h-11 w-full cursor-pointer items-center justify-center gap-2 bg-[#4B2AAD] text-sm hover:bg-[#3b2190] sm:text-base disabled:cursor-not-allowed"
+                        disabled={isPending}
+                        size="lg"
+                        type="submit"
+                    >
+                        {isPending ? (
+                            <>
+                                <LucideLoader2 className="size-5 animate-spin" />
+                                Signing in...
+                            </>
+                        ) : (
+                            'Sign In'
+                        )}
                     </Button>
                 </form>
 
-                <div className="mt-3 text-right">
-                    <button
-                        type="button"
-                        className="text-sm text-sky-600 hover:underline"
-                        onClick={() => navigate('/auth/forgot-password')}
-                    >
-                        Forgot password?
-                    </button>
-                </div>
-
-                <Separator className='my-5' />
-
-                <div className="flex flex-col gap-y-2.5">
-                    <Button
-                        className="w-full relative"
-                        disabled={isPending}
-                        onClick={() => {
-                            window.location.href = buildGoogleAuthUrl();
-                        }}
-                        variant="outline"
-                        size="lg"
-                    >
-                        <FcGoogle className="size-5 absolute left-2.5 top-2.5" />
-                        Continue with Google
-                    </Button>
-                </div>
-
-                <p
-                    className='text-s text-muted-foreground mt-4'
-                >
-                    Donot have an account ? {' '}
-                    <span 
-                        className='text-sky-600 hover:underline cursor-pointer'
+                <p className="mt-4 text-center text-sm leading-6 text-muted-foreground">
+                    Don&apos;t have an account?{' '}
+                    <span
+                        className="cursor-pointer text-[#4B2AAD] hover:underline"
                         onClick={() => navigate('/auth/signup')}
                     >
-                        Sign Up
+                        Sign up
                     </span>
                 </p>
             </CardContent>
