@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowRightIcon, HashIcon, Loader2Icon, SearchIcon, UsersIcon } from 'lucide-react';
+import { ArrowRightIcon, Loader2Icon, UsersIcon } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import VerificationInput from 'react-verification-input';
@@ -51,11 +51,19 @@ export const JoinPage = () => {
             });
 
             await queryClient.invalidateQueries({ queryKey: ['fetchWorkspaces'] });
-            toast.success(workspacePreview?.name ? `Joined ${workspacePreview.name}` : 'Joined workspace successfully');
+            toast.success(
+                workspacePreview?.name
+                    ? `Joined ${workspacePreview.name}`
+                    : 'Joined workspace successfully'
+            );
+
             navigate(`/workspaces/${targetWorkspaceId}`);
         } catch (error) {
             toast.error('Failed to join workspace', {
-                description: getApiErrorMessage(error, 'Please check the code and try again.')
+                description: getApiErrorMessage(
+                    error,
+                    'Please check the code and try again.'
+                )
             });
         } finally {
             setIsResolving(false);
@@ -73,76 +81,108 @@ export const JoinPage = () => {
     }, [handleAddMemberToWorkspace, searchParams]);
 
     return (
-        <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#611f69,_#4a154b_38%,_#2c0f30_78%)] px-4 py-10">
-            <div className="mx-auto grid min-h-[80vh] max-w-5xl items-center gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-                <section className="rounded-[32px] border border-white/10 bg-white/10 px-8 py-10 text-white shadow-[0_30px_90px_-42px_rgba(0,0,0,0.7)] backdrop-blur">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/80">
-                        <SearchIcon className="size-4" />
-                        Join by invite code
-                    </div>
-                    <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-tight">
-                        Enter the workspace code and jump right in.
-                    </h1>
-                    <p className="mt-4 max-w-2xl text-sm leading-6 text-white/72">
-                        Paste the 6-character code shared by your team. We&apos;ll find the workspace, verify access, and add you automatically.
-                    </p>
+        <div className="min-h-screen bg-gradient-to-br from-[#611f69] via-[#4a154b] to-[#2c0f30] px-4 py-6 sm:py-10">
+            <div className="mx-auto w-full max-w-6xl">
 
-                    <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-3xl border border-white/10 bg-black/15 p-5">
-                            <p className="text-sm font-medium text-white">Need from your team</p>
-                            <p className="mt-2 text-sm text-white/65">A 6-character invite code like `A1B2C3`.</p>
+                {/* MAIN CONTAINER */}
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 items-center">
+
+                    {/* INFO SECTION */}
+                    <div className="text-white space-y-6 order-2 lg:order-1 text-center lg:text-left">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                                Join a workspace
+                            </h1>
+                            <p className="mt-3 text-white/70 text-sm sm:text-base leading-relaxed max-w-md mx-auto lg:mx-0">
+                                Enter the invite code shared by your team to join an existing workspace.
+                                If you already have access, we’ll take you there automatically.
+                            </p>
                         </div>
-                        <div className="rounded-3xl border border-emerald-400/20 bg-emerald-400/10 p-5">
-                            <p className="text-sm font-medium text-emerald-100">What happens next</p>
-                            <p className="mt-2 text-sm text-emerald-50/80">You land in the workspace and we refresh your workspace list automatically.</p>
-                        </div>
-                    </div>
-                </section>
 
-                <section className="rounded-[32px] border border-white/70 bg-white p-8 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)]">
-                    <div className="mb-6">
-                        <div className="inline-flex items-center gap-2 rounded-full bg-[#f4e8f7] px-4 py-2 text-sm font-medium text-[#611f69]">
-                            <HashIcon className="size-4" />
-                            Workspace access
-                        </div>
-                        <h2 className="mt-4 text-2xl font-semibold text-slate-900">Join workspace</h2>
-                        <p className="mt-2 text-sm leading-6 text-slate-500">
-                            Enter the invite code below. If you already belong to this workspace, we&apos;ll take you there directly.
-                        </p>
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
+                                <h3 className="font-semibold">Where to get the code?</h3>
+                                <p className="text-sm text-white/70 mt-1">
+                                    Ask your workspace admin or team member for the 6-digit invite code.
+                                </p>
+                            </div>
 
-                    <div className="rounded-3xl bg-slate-50 p-5">
-                        <VerificationInput
-                            onComplete={handleAddMemberToWorkspace}
-                            length={6}
-                            autoFocus
-                            classNames={{
-                                container: 'flex justify-center gap-x-2 sm:gap-x-3',
-                                character: 'h-14 w-11 rounded-2xl border border-slate-200 bg-white text-lg font-semibold text-slate-900 shadow-sm transition focus:border-[#611f69] focus:ring-2 focus:ring-[#611f69]/20',
-                                characterInactive: 'bg-white text-slate-900',
-                                characterFilled: 'bg-white text-slate-900',
-                                characterSelected: 'border-[#611f69] ring-2 ring-[#611f69]/20'
-                            }}
-                        />
-
-                        <div className="mt-5 flex items-center justify-center gap-2 text-sm text-slate-500">
-                            {isBusy ? <Loader2Icon className="size-4 animate-spin" /> : <UsersIcon className="size-4" />}
-                            {isBusy ? 'Joining workspace...' : 'We will validate the code as soon as all 6 characters are entered.'}
+                            <div className="bg-white/10 border border-white/10 rounded-2xl p-4 backdrop-blur">
+                                <h3 className="font-semibold">What happens next?</h3>
+                                <p className="text-sm text-white/70 mt-1">
+                                    After entering the code, you will instantly join the workspace.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                        <Button type="button" variant="outline" className="rounded-full" asChild>
-                            <Link to={workspaceId ? `/workspaces/${workspaceId}` : '/home'}>
-                                {workspaceId ? 'Back to workspace' : 'Back to home'}
-                            </Link>
-                        </Button>
-                        <Button type="button" className="rounded-full bg-[#611f69] hover:bg-[#4a154b]" onClick={() => navigate('/home')}>
-                            Open home
-                            <ArrowRightIcon className="ml-2 size-4" />
-                        </Button>
+                    {/* JOIN CARD */}
+                    <div className="bg-white rounded-3xl shadow-2xl p-5 sm:p-8 w-full max-w-md mx-auto order-1 lg:order-2">
+                        <div className="text-center mb-6">
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                                Enter Invite Code
+                            </h2>
+                            <p className="text-sm text-gray-500 mt-1">
+                                Enter the 6-character workspace code
+                            </p>
+                        </div>
+
+                        <div className="bg-gray-50 rounded-2xl p-4 sm:p-6">
+                            {/* Responsive Wrapper */}
+                            <div className="max-w-xs sm:max-w-sm md:max-w-md mx-auto">
+                                <VerificationInput
+                                    onComplete={handleAddMemberToWorkspace}
+                                    length={6}
+                                    autoFocus
+                                    classNames={{
+                                        container: "flex justify-center gap-2 w-full",
+                                        character:
+                                            "aspect-square w-full max-w-[36px] sm:max-w-[44px] md:max-w-[52px] lg:max-w-[58px] rounded-xl border border-gray-300 bg-white text-base sm:text-lg md:text-xl font-semibold text-gray-900 shadow-sm transition-all focus:border-[#611f69] focus:ring-2 focus:ring-[#611f69]/20",
+                                        characterInactive: "bg-white text-gray-900",
+                                        characterFilled: "bg-white text-gray-900",
+                                        characterSelected:
+                                            "border-[#611f69] ring-2 ring-[#611f69]/20",
+                                    }}
+                                />
+                            </div>
+
+                            {/* Status Text */}
+                            <div className="mt-4 flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-500 text-center">
+                                {isBusy ? (
+                                    <Loader2Icon className="size-4 animate-spin" />
+                                ) : (
+                                    <UsersIcon className="size-4" />
+                                )}
+                                {isBusy
+                                    ? "Joining workspace..."
+                                    : "Workspace will be joined automatically"}
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex flex-col gap-3">
+                            <Button
+                                type="button"
+                                className="w-full rounded-full bg-[#611f69] hover:bg-[#4a154b] cursor-pointer"
+                                onClick={() => navigate("/home")}
+                            >
+                                Open home
+                                <ArrowRightIcon className="ml-2 size-4" />
+                            </Button>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full rounded-full cursor-pointer"
+                                asChild
+                            >
+                                <Link to={workspaceId ? `/workspaces/${workspaceId}` : "/home"}>
+                                    {workspaceId ? "Back to workspace" : "Back to home"}
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
-                </section>
+
+                </div>
             </div>
         </div>
     );
