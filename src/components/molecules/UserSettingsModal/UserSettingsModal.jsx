@@ -1,16 +1,24 @@
-import { BadgeCheckIcon, CrownIcon, CreditCardIcon, SparklesIcon } from 'lucide-react';
+import { BadgeCheckIcon, CameraIcon, CrownIcon, CreditCardIcon, Loader2Icon, SparklesIcon } from 'lucide-react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
+import { updateProfileRequest } from '@/apis/auth';
+import { getPreginedUrl, uploadImageToAWSpresignedUrl } from '@/apis/s3';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useUserSettingsModal } from '@/hooks/context/useUserSettingsModal';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 
 export const UserSettingsModal = () => {
     const navigate = useNavigate();
-    const { auth } = useAuth();
+    const { auth, setAuth } = useAuth();
     const { openUserSettingsModal, setOpenUserSettingsModal } = useUserSettingsModal();
+    const fileInputRef = useRef(null);
+    const [isUploadingProfilePicture, setIsUploadingProfilePicture] = useState(false);
 
     const currentPlan = auth?.user?.plan === 'Paid' ? 'Paid' : 'Normal';
     const isPaidPlan = currentPlan === 'Paid';
@@ -23,6 +31,51 @@ export const UserSettingsModal = () => {
     function handleUpgrade() {
         setOpenUserSettingsModal(false);
         navigate('/makepayment');
+    }
+
+    async function handleProfilePictureChange(event) {
+        const file = event.target.files?.[0];
+        if (!file || !auth?.token) return;
+
+        setIsUploadingProfilePicture(true);
+        try {
+            const preSignedUrl = await getPreginedUrl({ token: auth.token });
+            if (!preSignedUrl) {
+                throw new Error('Could not create an upload URL.');
+            }
+
+            await uploadImageToAWSpresignedUrl({
+                url: preSignedUrl,
+                file
+            });
+
+            const profilePicture = preSignedUrl.split('?')[0];
+            const response = await updateProfileRequest({
+                token: auth.token,
+                profilePicture
+            });
+            const nextUser = {
+                ...auth.user,
+                ...response.data
+            };
+
+            localStorage.setItem('user', JSON.stringify(nextUser));
+            setAuth({
+                token: auth.token,
+                user: nextUser,
+                isLoading: false
+            });
+            toast.success('Profile picture updated');
+        } catch (error) {
+            toast.error('Could not update profile picture', {
+                description: getApiErrorMessage(error, 'Please try again.')
+            });
+        } finally {
+            setIsUploadingProfilePicture(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
     }
 
     return (
@@ -44,12 +97,35 @@ export const UserSettingsModal = () => {
                 <div className="space-y-6 px-6 py-6">
                     <section className="flex items-center gap-4 rounded-3xl bg-slate-50 p-4">
                         <Avatar className="size-16 ring-4 ring-white">
-                            <AvatarImage src={auth?.user?.avatar} />
+                            <AvatarImage src={getAvatarUrl(auth?.user)} />
                             <AvatarFallback>{usernameInitial}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
                             <p className="truncate text-lg font-semibold text-slate-900">{auth?.user?.username}</p>
                             <p className="truncate text-sm text-slate-500">{auth?.user?.email}</p>
+                        </div>
+                        <div className="ml-auto">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={handleProfilePictureChange}
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="rounded-full"
+                                disabled={isUploadingProfilePicture}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                {isUploadingProfilePicture ? (
+                                    <Loader2Icon className="mr-2 size-4 animate-spin" />
+                                ) : (
+                                    <CameraIcon className="mr-2 size-4" />
+                                )}
+                                Change photo
+                            </Button>
                         </div>
                     </section>
 

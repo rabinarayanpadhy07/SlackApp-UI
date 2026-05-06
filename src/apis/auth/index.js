@@ -51,3 +51,19 @@ export const resetPasswordRequest = async ({ token, password }) => {
         throw error.response?.data || error;
     }
 };
+
+export const updateProfileRequest = async ({ token, profilePicture }) => {
+    try {
+        const response = await axios.put('/users/profile', {
+            profilePicture
+        }, {
+            headers: {
+                'x-access-token': token
+            }
+        });
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw error.response?.data || error;
+    }
+};

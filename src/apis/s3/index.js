@@ -14,6 +14,7 @@ export const uploadImageToAWSpresignedUrl = async ({ url, file }) => {
         return response;
     } catch(error) {
         console.log('Error in uploading image to s3', error);
+        throw error;
     }
 };
 
@@ -27,5 +28,6 @@ export const getPreginedUrl = async ({ token }) => {
         return response?.data?.data;
     } catch (error) {
         console.log('Error in getting presigned url', error);
+        throw error?.response?.data || error;
     }
 }

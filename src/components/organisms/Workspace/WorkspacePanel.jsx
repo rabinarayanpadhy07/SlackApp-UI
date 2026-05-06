@@ -95,7 +95,7 @@ export const WorkspacePanel = () => {
                 {workspace?.members?.map((item) => {
                     const memberId = item.memberId;
                     if (!memberId) return null;
-                    return <UserItem key={memberId._id} label={memberId.username} id={memberId._id} image={memberId.avatar} />;
+                    return <UserItem key={memberId._id} label={memberId.username} id={memberId._id} user={memberId} />;
                 })}
             </WorkspacePanelSection>
         </div>

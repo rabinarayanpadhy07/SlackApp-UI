@@ -10,6 +10,7 @@ import { useRemoveMemberFromWorkspace } from '@/hooks/apis/workspaces/useRemoveM
 import { useUpdateMemberRole } from '@/hooks/apis/workspaces/useUpdateMemberRole';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useConfirm } from '@/hooks/useConfirm';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 
 export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
     const queryClient = useQueryClient();
@@ -92,7 +93,7 @@ export const WorkspaceMembersModal = ({ open, setOpen, workspace }) => {
                             <div key={member.memberId?._id} className='flex items-center justify-between p-3 border rounded-lg bg-gray-50'>
                                 <div className='flex items-center gap-x-3'>
                                     <img 
-                                        src={member.memberId?.avatar || 'https://github.com/shadcn.png'} 
+                                        src={getAvatarUrl(member.memberId)} 
                                         alt='avatar' 
                                         className='w-10 h-10 rounded-md'
                                     />

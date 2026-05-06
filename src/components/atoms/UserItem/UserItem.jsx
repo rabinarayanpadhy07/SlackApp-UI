@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useSocket } from '@/hooks/context/useSocket';
 import { cn } from '@/lib/utils';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 
 const userItemVariants = cva(
     'flex items-center gap-1.5 justify-start font-normal h-7 px-4 mt-2 text-sm',
@@ -24,7 +25,7 @@ const userItemVariants = cva(
 export const UserItem = ({
     id,
     label = 'Member',
-    image,
+    user,
     variant
 }) => {
     const { currentWorkspace } = useCurrentWorkspace();
@@ -47,7 +48,7 @@ export const UserItem = ({
             <Link to={`/workspaces/${workspaceId}/members/${id}`} className="flex items-center gap-1.5 w-full">
                 <div className="relative shrink-0">
                     <Avatar className="h-5 w-5 rounded-md">
-                        <AvatarImage src={image} className='rounded-md' />
+                        <AvatarImage src={getAvatarUrl(user)} className='rounded-md' />
                         <AvatarFallback
                             className='rounded-md bg-sky-500 text-white text-xs'
                         >

@@ -84,9 +84,9 @@ export const DirectMessage = () => {
                         <Message
                             key={message._id}
                             messageId={message._id}
+                            author={message.senderId}
                             authorId={message.senderId?._id}
                             body={message.body}
-                            authorImage={message.senderId?.avatar}
                             authorName={message.senderId?.username}
                             createdAt={message.createdAt}
                             image={message.image}

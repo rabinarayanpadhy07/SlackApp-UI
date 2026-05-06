@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCreateWorkspaceModal } from '@/hooks/context/useCreateWorkspaceModal';
 import { useUserSettingsModal } from '@/hooks/context/useUserSettingsModal';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 
 export const UserButton = () => {
 
@@ -36,7 +37,7 @@ export const UserButton = () => {
         <DropdownMenu>
             <DropdownMenuTrigger className='outline-none relative group'>
                 <Avatar className='size-10 hover:opacity-65 transition'>
-                    <AvatarImage src={auth?.user?.avatar} />
+                    <AvatarImage src={getAvatarUrl(auth?.user)} />
                     <AvatarFallback>{auth?.user?.username[0].toUpperCase()}</AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>

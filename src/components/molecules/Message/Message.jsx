@@ -9,6 +9,7 @@ import { Hint } from '@/components/atoms/Hint/Hint';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { Editor } from '@/components/atoms/Editor/Edtior';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -22,6 +23,7 @@ const COMMON_EMOJIS = ['👍', '❤️', '😂', '🔥', '👀'];
 
 export const Message = ({
     messageId,
+    author,
     authorId,
     authorImage,
     authorName = 'User',
@@ -187,7 +189,7 @@ export const Message = ({
 
                 <button className="relative shrink-0">
                     <Avatar>
-                        <AvatarImage  className="rounded-md"  src={authorImage} />
+                        <AvatarImage  className="rounded-md"  src={getAvatarUrl(author || { profilePicture: authorImage })} />
                         <AvatarFallback
                             className="rounded-md bg-sky-500 text-white text-sm"
                         >

@@ -8,7 +8,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -19,6 +19,7 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/context/useAuth';
+import { getAvatarUrl } from '@/utils/getAvatarUrl';
 import { AdminSearchInput } from './AdminSearchInput';
 import { getInitials } from '../utils/adminDashboardUtils';
 
@@ -132,6 +133,7 @@ export const AdminHeader = ({
                             className="flex max-w-[200px] items-center gap-2 rounded-lg border border-[#611f69]/30 bg-[#350d36]/40 py-1.5 pl-1.5 pr-2 text-left transition hover:bg-[#611f69]/25"
                         >
                             <Avatar className="size-8 border border-[#611f69]/40">
+                                <AvatarImage src={getAvatarUrl(user)} />
                                 <AvatarFallback className="bg-[#611f69] text-xs font-semibold text-white">
                                     {getInitials(displayName || email)}
                                 </AvatarFallback>
