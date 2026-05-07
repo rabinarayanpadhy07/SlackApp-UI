@@ -34,6 +34,7 @@ const ResetPasswordPage = lazyNamed(
   'ResetPasswordPage'
 );
 const Home = lazyNamed(() => import('@/pages/Home/Home'), 'Home');
+const LandingPage = lazyNamed(() => import('@/pages/Landing/LandingPage'), 'LandingPage');
 const Notfound = lazyNamed(() => import('@/pages/Notfound/Notfound'), 'Notfound');
 const Payments = lazyNamed(() => import('@/pages/Payments/Payments'), 'Payments');
 const CreateWorkspacePage = lazyNamed(
@@ -81,7 +82,7 @@ export const AppRoutes = () => {
     return (
         <Suspense fallback={<RouteFallback />}>
             <Routes>
-              <Route path="/" element={<Navigate to="/auth/signin" replace />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/workspaces/create" element={<ProtectedRoute><CreateWorkspacePage /></ProtectedRoute>} />
               <Route path="/auth/signup" element={<Auth><SignupContainer /></Auth>} />
               <Route path="/auth/signin" element={<Auth><SigninContainer /></Auth>} />

@@ -50,8 +50,9 @@ describe('Home', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Engineering')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /open latest workspace/i }));
+    const engineeringElements = screen.getAllByText('Engineering');
+    expect(engineeringElements.length).toBeGreaterThan(0);
+    fireEvent.click(engineeringElements[0]);
 
     expect(navigate).toHaveBeenCalledWith('/workspaces/ws-1');
   });

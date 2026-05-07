@@ -61,24 +61,24 @@ export const AdminHeader = ({
     };
 
     return (
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-[#350d36] bg-[#120a14] px-3 sm:gap-4 sm:px-4 lg:px-6">
+        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md px-3 sm:gap-4 sm:px-4 lg:px-6 z-10 relative">
             <nav
-                className="flex min-w-0 shrink-0 items-center gap-1 text-sm text-[#a49ba8]"
+                className="flex min-w-0 shrink-0 items-center gap-1 text-sm text-slate-400"
                 aria-label="Breadcrumb"
             >
                 <button
                     type="button"
                     onClick={() => navigate('/admin')}
-                    className="truncate font-medium text-[#c9b8cc] transition hover:text-[#f8f8f8]"
+                    className="truncate font-medium text-slate-300 transition hover:text-slate-100"
                 >
                     Admin
                 </button>
-                <ChevronRight className="size-4 shrink-0 text-[#611f69]" aria-hidden />
-                <span className="flex min-w-0 items-center gap-2 font-semibold text-[#f8f8f8]">
+                <ChevronRight className="size-4 shrink-0 text-white/20" aria-hidden />
+                <span className="flex min-w-0 items-center gap-2 font-semibold text-slate-200">
                     <span className="truncate">{activeSectionLabel}</span>
                     {isSectionFetching ? (
                         <span
-                            className="size-1.5 shrink-0 animate-pulse rounded-full bg-[#2EB67D]"
+                            className="size-1.5 shrink-0 animate-pulse rounded-full bg-purple-500"
                             title="Syncing"
                         />
                     ) : null}
@@ -94,7 +94,7 @@ export const AdminHeader = ({
                         placeholder={searchPlaceholder}
                     />
                 ) : (
-                    <div className="h-9 rounded-lg border border-dashed border-[#611f69]/30 bg-[#350d36]/20 px-3 text-xs leading-9 text-[#7c7280]">
+                    <div className="h-9 rounded-lg border border-dashed border-white/10 bg-white/5 px-3 text-xs leading-9 text-slate-500">
                         Search available on Users, Workspaces, and Moderation.
                     </div>
                 )}
@@ -107,7 +107,7 @@ export const AdminHeader = ({
                             type="button"
                             size="icon"
                             variant="ghost"
-                            className="size-9 text-[#d1cbd4] hover:bg-[#611f69]/20 hover:text-[#f8f8f8]"
+                            className="size-9 text-slate-400 hover:bg-white/10 hover:text-slate-200"
                             onClick={handleExportExcel}
                             title="Export Excel"
                         >
@@ -117,7 +117,7 @@ export const AdminHeader = ({
                             type="button"
                             size="icon"
                             variant="ghost"
-                            className="size-9 text-[#d1cbd4] hover:bg-[#611f69]/20 hover:text-[#f8f8f8]"
+                            className="size-9 text-slate-400 hover:bg-white/10 hover:text-slate-200"
                             onClick={handleExportPdf}
                             title="Export PDF"
                         >
@@ -130,19 +130,19 @@ export const AdminHeader = ({
                     <DropdownMenuTrigger asChild>
                         <button
                             type="button"
-                            className="flex max-w-[200px] items-center gap-2 rounded-lg border border-[#611f69]/30 bg-[#350d36]/40 py-1.5 pl-1.5 pr-2 text-left transition hover:bg-[#611f69]/25"
+                            className="flex max-w-[200px] items-center gap-2 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-2 text-left transition hover:bg-white/10"
                         >
-                            <Avatar className="size-8 border border-[#611f69]/40">
+                            <Avatar className="size-8 border border-white/10">
                                 <AvatarImage src={getAvatarUrl(user)} />
-                                <AvatarFallback className="bg-[#611f69] text-xs font-semibold text-white">
+                                <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-500 text-xs font-semibold text-white">
                                     {getInitials(displayName || email)}
                                 </AvatarFallback>
                             </Avatar>
                             <span className="hidden min-w-0 flex-1 sm:block">
-                                <span className="block truncate text-xs font-semibold text-[#f8f8f8]">
+                                <span className="block truncate text-xs font-semibold text-slate-200">
                                     {displayName}
                                 </span>
-                                <span className="block truncate text-[10px] text-[#a49ba8]">
+                                <span className="block truncate text-[10px] text-slate-400">
                                     Super admin
                                 </span>
                             </span>
@@ -150,15 +150,15 @@ export const AdminHeader = ({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
                         align="end"
-                        className="w-56 border-[#611f69]/35 bg-[#1a0d1c] text-[#f8f8f8]"
+                        className="w-56 border-white/10 bg-[#121212] text-slate-200"
                     >
                         <DropdownMenuLabel className="font-normal">
-                            <span className="text-xs text-[#a49ba8]">Signed in</span>
-                            <span className="block truncate text-sm text-[#ebe6ed]">{email}</span>
+                            <span className="text-xs text-slate-400">Signed in</span>
+                            <span className="block truncate text-sm text-slate-300">{email}</span>
                         </DropdownMenuLabel>
-                        <DropdownMenuSeparator className="bg-[#611f69]/30" />
+                        <DropdownMenuSeparator className="bg-white/10" />
                         <DropdownMenuItem
-                            className="cursor-pointer focus:bg-[#611f69]/30"
+                            className="cursor-pointer focus:bg-white/10"
                             onClick={() => navigate('/home')}
                         >
                             <HomeIcon className="mr-2 size-4" />
@@ -166,15 +166,15 @@ export const AdminHeader = ({
                         </DropdownMenuItem>
                         {firstWorkspaceId ? (
                             <DropdownMenuItem
-                                className="cursor-pointer focus:bg-[#611f69]/30"
+                                className="cursor-pointer focus:bg-white/10"
                                 onClick={() => navigate(`/workspaces/${firstWorkspaceId}`)}
                             >
                                 Open workspace
                             </DropdownMenuItem>
                         ) : null}
-                        <DropdownMenuSeparator className="bg-[#611f69]/30" />
+                        <DropdownMenuSeparator className="bg-white/10" />
                         <DropdownMenuItem
-                            className="cursor-pointer text-[#fb9fb8] focus:bg-[#E01E5A]/20 focus:text-[#fce7f0]"
+                            className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-300"
                             onClick={handleLogout}
                         >
                             <LogOutIcon className="mr-2 size-4" />

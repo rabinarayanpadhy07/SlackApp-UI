@@ -1,16 +1,14 @@
-import { InfoIcon, LucideLoader2, SearchIcon, ShieldIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { InfoIcon, LucideLoader2, ShieldIcon, Menu, Headphones } from 'lucide-react';
+import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
 import { useGetWorkspaceById } from '@/hooks/apis/workspaces/useGetWorkspaceById';
 import { useAuth } from '@/hooks/context/useAuth';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
-import { SearchModal } from '@/components/organisms/Search/SearchModal';
 
-export const WorkspaceNavbar = () => {
+export const WorkspaceNavbar = ({ onMenuClick }) => {
 
-    const [searchOpen, setSearchOpen] = useState(false);
     const { workspaceId } = useParams();
 
     const navigate = useNavigate();
@@ -19,7 +17,6 @@ export const WorkspaceNavbar = () => {
     const { setCurrentWorkspace } = useCurrentWorkspace();
 
     useEffect(() => {
-        
         if(!isFetching && !isSuccess && error) {
             console.log('Error fetching workspace', error.status);
             if(error.status === 401 || error.status === 403) {
@@ -34,56 +31,61 @@ export const WorkspaceNavbar = () => {
 
     }, [workspace, setCurrentWorkspace, isSuccess, error, isFetching, logout, navigate]);
 
-    
     if(isFetching) {
-        return <LucideLoader2 className="animate-spin ml-2" />;
+        return (
+            <div className="flex h-14 items-center justify-center bg-white border-b border-black/10 w-full rounded-t-2xl">
+                <LucideLoader2 className="animate-spin text-purple-500" />
+            </div>
+        );
     }
 
     return (
-        <>
-        <SearchModal open={searchOpen} setOpen={setSearchOpen} workspace={workspace} />
-        <nav
-            className='flex items-center justify-center h-12 p-1.5 bg-[#481349] z-10 w-full'
-        >
-            <div className='flex-1 flex items-center justify-end px-4' />
-            <div className="max-w-[600px] w-full px-4 flex items-center justify-center">
+        <nav className='flex items-center justify-between h-14 px-4 bg-white border-b border-black/5 z-10 w-full rounded-t-2xl shadow-sm'>
+            
+            {/* Left side: Mobile Menu Toggle & Title */}
+            <div className='flex-1 flex items-center justify-start'>
                 <Button
-                    onClick={() => setSearchOpen(true)}
-                    size='sm'
-                    className='bg-white/10 hover:bg-white/20 w-full justify-start h-[28px] px-3 rounded-full transition-colors duration-200 group'
+                    variant="transparent"
+                    size="icon"
+                    onClick={onMenuClick}
+                    className="md:hidden text-slate-500 hover:text-slate-800 hover:bg-slate-100 mr-2"
                 >
-                    <SearchIcon className='size-3.5 text-white/70 group-hover:text-white mr-2' />
-                    <span className='text-white/70 group-hover:text-white text-xs'>
-                        Search {workspace?.name || 'Workspace'} 
-                    </span>
-                    <kbd className="ml-auto pointer-events-none inline-flex h-4 select-none items-center gap-1 rounded bg-white/5 px-1.5 font-mono text-[10px] text-white/50">
-                        <span>⌘</span>K
-                    </kbd>
+                    <Menu className="w-5 h-5" />
                 </Button>
+                <div className="font-semibold text-slate-800 truncate max-w-[200px]">
+                    {workspace?.name || 'Workspace'}
+                </div>
             </div>
 
-            <div
-                className='ml-auto flex-1 flex items-center justify-end pr-3'
-            >
+            {/* Right side: Actions */}
+            <div className='flex items-center justify-end space-x-2'>
+                {/* Start Huddle Icon */}
+                <Button
+                    variant='transparent'
+                    size='icon'
+                    className="hover:bg-slate-100 rounded-full text-slate-500 hover:text-purple-600 transition-colors group"
+                >
+                    <Headphones className='size-5 group-hover:scale-110 transition-transform' />
+                </Button>
+
                 {auth?.user?.isSuperAdmin && (
                     <Button
                         variant='transparent'
                         size='icon'
-                        className="hover:bg-white/10 rounded"
+                        className="hover:bg-slate-100 rounded-full text-amber-500 hover:text-amber-600 transition-colors"
                         onClick={() => navigate('/admin')}
                     >
-                        <ShieldIcon className='size-4.5 text-amber-300 hover:text-amber-200' />
+                        <ShieldIcon className='size-5' />
                     </Button>
                 )}
                 <Button
                     variant='transparent'
                     size='icon'
-                    className="hover:bg-white/10 rounded"
+                    className="hover:bg-slate-100 rounded-full text-slate-500 hover:text-slate-800 transition-colors"
                 >
-                    <InfoIcon className='size-4.5 text-white/80 hover:text-white' />
+                    <InfoIcon className='size-5' />
                 </Button>
             </div>
         </nav>
-        </>
     );
 };

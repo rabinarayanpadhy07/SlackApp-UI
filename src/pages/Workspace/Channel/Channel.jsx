@@ -1,4 +1,4 @@
-import { Loader2Icon, TriangleAlertIcon, Pin } from 'lucide-react';
+import { Loader2Icon, TriangleAlertIcon, Pin, Sparkles, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -26,6 +26,7 @@ export const Channel = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [replySeedValue, setReplySeedValue] = useState('');
     const [showHuddleAiPrompt, setShowHuddleAiPrompt] = useState(false);
+    const [isSummaryDismissed, setIsSummaryDismissed] = useState(false);
     const { auth } = useAuth(); // Needed to pass the memberId
     const { channelDetails, isFetching, isError } = useGetChannelById(channelId);
     const { setMessageList, messageList } = useChannelMessages();
@@ -61,6 +62,15 @@ export const Channel = () => {
             setMessageList([...(messages || [])].reverse());
         }
     }, [isSuccess, messages, setMessageList, channelId]);
+
+    useEffect(() => {
+        if (visibleSummary && !webrtc.isHuddleActive && hasAiAccess && !isSummaryDismissed) {
+            const timer = setTimeout(() => {
+                setIsSummaryDismissed(true);
+            }, 10 * 60 * 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [visibleSummary, webrtc.isHuddleActive, hasAiAccess, isSummaryDismissed]);
 
     useEffect(() => {
         if (channelDetails?.messages?.length) {
@@ -206,22 +216,41 @@ export const Channel = () => {
                 </div>
             )}
 
-            {visibleSummary && !webrtc.isHuddleActive && hasAiAccess && (
-                <div className="border-b bg-emerald-50/70 px-5 py-4">
-                    <div className="max-w-4xl space-y-3 rounded-2xl border border-emerald-200 bg-white/70 p-4">
-                        <div>
-                            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700">Latest Huddle Summary</p>
-                            <p className="mt-1 text-sm text-slate-700">{visibleSummary?.overview}</p>
-                        </div>
-                        {visibleSummary?.actionItems?.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {visibleSummary.actionItems.map((item) => (
-                                    <span key={item} className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
-                                        {item}
-                                    </span>
-                                ))}
+            {visibleSummary && !webrtc.isHuddleActive && hasAiAccess && !isSummaryDismissed && (
+                <div className="px-5 py-4 w-full">
+                    <div className="relative w-full rounded-xl border border-purple-600/30 bg-[#13151a] p-4 flex gap-4 overflow-hidden">
+                        {/* Glow effect */}
+                        <div className="absolute top-0 left-0 w-64 h-full bg-purple-600/5 blur-[50px] pointer-events-none"></div>
+                        
+                        <div className="shrink-0 pt-1">
+                            <div className="size-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                                <Sparkles className="size-5 text-purple-400" />
                             </div>
-                        )}
+                        </div>
+                        
+                        <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                                <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-purple-400 mb-2">LATEST HUDDLE SUMMARY</p>
+                                <button 
+                                    onClick={() => setIsSummaryDismissed(true)}
+                                    className="text-slate-500 hover:text-slate-300 transition-colors p-1"
+                                >
+                                    <X className="size-4" />
+                                </button>
+                            </div>
+                            
+                            <p className="mt-1 text-sm text-slate-300 leading-relaxed">{visibleSummary?.overview}</p>
+                            
+                            {visibleSummary?.actionItems?.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {visibleSummary.actionItems.map((item) => (
+                                        <span key={item} className="rounded-md bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-200">
+                                            {item}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
@@ -229,7 +258,7 @@ export const Channel = () => {
             {/* We need to make sure that below div is scrollable for the messages */}
             <div
                 ref={messageContainerListRef}
-                className='flex-5 overflow-y-auto p-5 gap-y-2'
+                className='flex-1 overflow-y-auto p-5 gap-y-2'
             >
                 {messageList?.map((message) => {
                     return (
@@ -256,8 +285,6 @@ export const Channel = () => {
                 })}   
             </div>         
 
-            
-            <div className='flex-1' /> 
             <TypingIndicator />
             <ChatInput seedValue={replySeedValue} />
         </div>

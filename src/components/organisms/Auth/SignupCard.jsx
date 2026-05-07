@@ -44,14 +44,7 @@ export const SignupCard = ({
                     </div>
                 )}
 
-                {isSuccess && (
-                    <div className='bg-primary/15 p-3 rounded-md flex items-center justify-center gap-x-2 text-sm text-primary'>
-                        <div className='flex flex-col items-center gap-2'>
-                            <p>Successfully signed up. Redirecting...</p>
-                            <LucideLoader2 className="animate-spin" />
-                        </div>
-                    </div>
-                )}
+
             </CardHeader>
 
             <CardContent>
@@ -121,12 +114,19 @@ export const SignupCard = ({
                     </div>
 
                     <Button
-                        disabled={isPending}
+                        disabled={isPending || isSuccess}
                         size="lg"
                         type="submit"
-                        className="mt-2 w-full cursor-pointer bg-[#4d1baa] hover:bg-[#4d1baa] disabled:cursor-not-allowed"
+                        className="mt-2 w-full flex items-center justify-center gap-2 cursor-pointer bg-[#4d1baa] hover:bg-[#4d1baa] disabled:cursor-not-allowed"
                     >
-                        Create Account
+                        {isPending || isSuccess ? (
+                            <>
+                                <LucideLoader2 className="size-5 animate-spin" />
+                                {isSuccess ? 'Redirecting...' : 'Creating Account...'}
+                            </>
+                        ) : (
+                            'Create Account'
+                        )}
                     </Button>
                 </form>
 

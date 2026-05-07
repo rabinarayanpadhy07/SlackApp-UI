@@ -11,28 +11,39 @@ export const useGetDirectMessages = ({
     limit = 20
 }) => {
     const { auth } = useAuth();
-    const enabled = Boolean(workspaceId && memberId);
+    const enabled = Boolean(workspaceId && memberId && auth?.token);
 
     const query = useQuery({
         queryKey: ['directMessages', workspaceId, memberId, page, limit],
         enabled,
         queryFn: async () => {
-            const res = await axiosInstance.get(
-                `/workspaces/${workspaceId}/members/${memberId}/messages`,
-                {
-                    params: { page, limit },
-                    headers: { 'x-access-token': auth?.token }
+            try {
+                const res = await axiosInstance.get(
+                    `/workspaces/${workspaceId}/members/${memberId}/messages`,
+                    {
+                        params: { page, limit },
+                        headers: { 'x-access-token': auth?.token }
+                    }
+                );
+                return res?.data?.data || [];
+            } catch (error) {
+                if (error?.response?.status === 404) {
+                    return [];
                 }
-            );
-            // backend uses a { data, message } envelope
-            return res?.data?.data || [];
+                throw error;
+            }
+        },
+        retry: (failureCount, error) => {
+            if (error?.response?.status === 404) return false;
+            return failureCount < 3;
         }
     });
 
     return {
         messages: query.data ?? [],
         isFetching: query.isFetching,
-        isError: query.isError
+        isError: query.isError,
+        error: query.error
     };
 };
 

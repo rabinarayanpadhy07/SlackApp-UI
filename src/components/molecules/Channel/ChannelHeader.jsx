@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { FaChevronDown } from 'react-icons/fa';
-import { Headphones, PencilIcon, Trash2Icon } from 'lucide-react';
+import { Headphones, PencilIcon, Trash2Icon, SearchIcon, ShieldIcon } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/context/useAuth';
 import { useCurrentWorkspace } from '@/hooks/context/useCurrentWorkspace';
 import { useConfirm } from '@/hooks/useConfirm';
 import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
+import { SearchModal } from '@/components/organisms/Search/SearchModal';
 
 export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, isHuddleLiveInChannel }) => {
     const navigate = useNavigate();
@@ -29,6 +30,7 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
     });
     const [editName, setEditName] = useState(name || '');
     const [isEditingName, setIsEditingName] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
 
     const isAdmin = currentWorkspace?.members?.some(
         (member) => member.memberId?._id === auth?.user?._id && member.role === 'admin'
@@ -115,41 +117,41 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
     return (
         <>
         <ConfirmDialog />
+        <SearchModal open={searchOpen} setOpen={setSearchOpen} workspace={currentWorkspace} />
         <div
-            className="bg-white border-b h-[50px] flex items-center justify-between px-4 overflow-hidden w-full"
+            className="bg-transparent border-b border-white/5 h-[56px] flex items-center justify-between px-4 w-full text-slate-200 pl-14 md:pl-4"
         >
             <Dialog>
                 <DialogTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="text-lg font-semibold px-2 w-auto overflow-hidden"
+                        className="text-lg font-semibold px-2 w-auto max-w-[150px] md:max-w-[300px] hover:bg-white/5 transition-colors"
                     >
-                        <span># {name} </span>
-                        <FaChevronDown className='size-3 ml-2' />
+                        <span className="truncate"># {name} </span>
+                        <FaChevronDown className='size-3 ml-2 shrink-0 text-slate-400' />
                     </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-[#13151a] text-slate-200 border-white/10">
                     <DialogHeader>
                         <DialogTitle>
                             # {name}
                         </DialogTitle>
-
                     </DialogHeader>
                     <div
                         className='px-4 pb-4 flex flex-col gap-y-2'
                     >
                         {isAdmin ? (
                             <button
-                                className='flex items-center gap-x-2 px-5 py-4 bg-white rounded-lg border cursor-pointer hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50'
+                                className='flex items-center gap-x-2 px-5 py-4 bg-white/5 rounded-lg border border-white/10 cursor-pointer hover:bg-white/10 transition-colors disabled:cursor-not-allowed disabled:opacity-50'
                                 onClick={handleDeleteChannel}
                                 disabled={isPending || isUpdatingChannel || channelCount <= 1}
                             >
-                                <Trash2Icon className='size-4 text-red-500' />
+                                <Trash2Icon className='size-4 text-red-400' />
                                 <div className='flex flex-col items-start'>
-                                    <p className='text-sm font-semibold text-red-600'>
+                                    <p className='text-sm font-semibold text-red-400'>
                                         Delete channel
                                     </p>
-                                    <p className='text-xs text-muted-foreground'>
+                                    <p className='text-xs text-slate-400'>
                                         {channelCount <= 1 ? 'At least one channel must remain in the workspace.' : 'Remove this channel and its messages.'}
                                     </p>
                                 </div>
@@ -157,17 +159,17 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
                         ) : null}
 
                         {isAdmin ? (
-                            <form className='space-y-3 rounded-lg border bg-slate-50 px-5 py-4' onSubmit={handleRenameChannel}>
+                            <form className='space-y-3 rounded-lg border border-white/10 bg-white/5 px-5 py-4' onSubmit={handleRenameChannel}>
                                 <div className='flex items-center justify-between'>
                                     <div>
-                                        <p className='text-sm font-semibold text-slate-900'>Channel name</p>
-                                        <p className='text-xs text-muted-foreground'>Rename this channel for everyone in the workspace.</p>
+                                        <p className='text-sm font-semibold text-slate-200'>Channel name</p>
+                                        <p className='text-xs text-slate-400'>Rename this channel for everyone in the workspace.</p>
                                     </div>
                                     <Button
                                         type='button'
                                         variant='ghost'
                                         size='sm'
-                                        className='h-8 px-2 text-slate-600'
+                                        className='h-8 px-2 text-slate-400 hover:text-white hover:bg-white/10'
                                         onClick={() => setIsEditingName((previous) => !previous)}
                                     >
                                         <PencilIcon className='mr-2 size-3.5' />
@@ -184,12 +186,14 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
                                             maxLength={50}
                                             required
                                             disabled={isUpdatingChannel || isPending}
+                                            className="bg-[#0a0a0a] border-white/10 text-white focus-visible:ring-purple-500"
                                             placeholder='Channel name e.g. design-team'
                                         />
                                         <DialogFooter className='sm:justify-start'>
                                             <Button
                                                 type='button'
                                                 variant='outline'
+                                                className="border-white/10 bg-transparent hover:bg-white/10 text-slate-300"
                                                 onClick={() => {
                                                     setEditName(name || '');
                                                     setIsEditingName(false);
@@ -200,6 +204,7 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
                                             </Button>
                                             <Button
                                                 type='submit'
+                                                className="bg-purple-600 hover:bg-purple-500 text-white"
                                                 disabled={isUpdatingChannel || isPending || editName.trim().length < 3 || editName.trim() === name}
                                             >
                                                 {isUpdatingChannel ? 'Saving...' : 'Save channel name'}
@@ -207,13 +212,13 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
                                         </DialogFooter>
                                     </>
                                 ) : (
-                                    <p className='text-sm text-slate-700'># {name}</p>
+                                    <p className='text-sm text-slate-300'># {name}</p>
                                 )}
                             </form>
                         ) : (
-                            <div className='rounded-lg border bg-slate-50 px-5 py-4'>
-                                <p className='text-sm font-semibold text-slate-900'>Channel name</p>
-                                <p className='mt-2 text-sm text-slate-700'># {name}</p>
+                            <div className='rounded-lg border border-white/10 bg-white/5 px-5 py-4'>
+                                <p className='text-sm font-semibold text-slate-200'>Channel name</p>
+                                <p className='mt-2 text-sm text-slate-300'># {name}</p>
                             </div>
                         )}
 
@@ -221,38 +226,63 @@ export const ChannelHeader = ({ name, channelId, isHuddleActive, startHuddle, is
                 </DialogContent>
             </Dialog>
 
-            {/* Huddle Interactive Toggle */}
+            {/* Right Side Actions */}
             <div className="flex items-center gap-2">
-                {!isHuddleActive && !isHuddleLiveInChannel && (
-                    <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={startHuddle}
-                        className="h-8 text-xs font-semibold rounded-full border-sky-400/60 text-sky-600 hover:bg-sky-50 hover:text-sky-700 transition"
+                
+                {/* Search Icon */}
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setSearchOpen(true)}
+                    className="h-8 w-8 rounded-md text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                >
+                    <SearchIcon className="size-4" />
+                </Button>
+
+                {/* Shield Admin Icon */}
+                {auth?.user?.isSuperAdmin && (
+                    <Button
+                        variant='ghost'
+                        size='icon'
+                        onClick={() => navigate('/admin')}
+                        className="h-8 w-8 rounded-md text-amber-500/80 hover:text-amber-400 hover:bg-white/10 transition-colors"
                     >
-                        <Headphones className="size-3.5 mr-2" />
-                        Start Huddle
+                        <ShieldIcon className='size-4' />
                     </Button>
                 )}
-                {!isHuddleActive && isHuddleLiveInChannel && (
-                    <Button 
-                        size="sm" 
-                        onClick={startHuddle}
-                        className="h-8 text-xs font-semibold rounded-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all flex items-center gap-2 px-3"
-                    >
-                        <span className="relative flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+
+                {/* Huddle Interactive Toggle */}
+                <div className="ml-2">
+                    {!isHuddleActive && !isHuddleLiveInChannel && (
+                        <Button 
+                            size="sm" 
+                            onClick={startHuddle}
+                            className="h-8 px-3 sm:px-4 text-xs font-semibold rounded-md bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_15px_rgba(147,51,234,0.3)] transition-all flex items-center"
+                        >
+                            <Headphones className="size-3.5 sm:mr-2 shrink-0" />
+                            <span className="hidden sm:inline">Start Huddle</span>
+                        </Button>
+                    )}
+                    {!isHuddleActive && isHuddleLiveInChannel && (
+                        <Button 
+                            size="sm" 
+                            onClick={startHuddle}
+                            className="h-8 px-3 sm:px-4 text-xs font-semibold rounded-md bg-emerald-500 hover:bg-emerald-400 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all flex items-center gap-2"
+                        >
+                            <span className="relative flex h-2 w-2 shrink-0">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-200 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
+                            </span>
+                            <span className="hidden sm:inline">Join Huddle</span>
+                        </Button>
+                    )}
+                    {isHuddleActive && (
+                        <span className="flex items-center gap-2 text-xs font-bold text-green-400 bg-green-500/10 px-3 py-1.5 rounded-md border border-green-500/20">
+                            <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                            In Huddle...
                         </span>
-                        Join Huddle
-                    </Button>
-                )}
-                {isHuddleActive && (
-                    <span className="flex items-center gap-2 text-xs font-bold text-green-700 bg-green-50 px-3 py-1.5 rounded-full ring-1 ring-green-400">
-                        <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-                        In Huddle...
-                    </span>
-                )}
+                    )}
+                </div>
             </div>
 
         </div>

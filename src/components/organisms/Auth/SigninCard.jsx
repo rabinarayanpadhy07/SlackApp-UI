@@ -45,12 +45,7 @@ export const SigninCard = ({
                     </div>
                 )}
 
-                {isSuccess && (
-                    <div className="mb-3 flex flex-col items-center justify-center rounded-md bg-primary/15 p-4 text-center text-sm text-primary">
-                        <LucideLoader2 className="mb-2 size-5 animate-spin" />
-                        <p>Successfully signed in. Redirecting...</p>
-                    </div>
-                )}
+
 
                 <Button
                     className="mb-4 flex h-11 w-full cursor-pointer items-center justify-center gap-2 px-4 text-sm sm:text-base disabled:cursor-not-allowed"
@@ -123,14 +118,14 @@ export const SigninCard = ({
 
                     <Button
                         className="mt-2 flex h-11 w-full cursor-pointer items-center justify-center gap-2 bg-[#4B2AAD] text-sm hover:bg-[#3b2190] sm:text-base disabled:cursor-not-allowed"
-                        disabled={isPending}
+                        disabled={isPending || isSuccess}
                         size="lg"
                         type="submit"
                     >
-                        {isPending ? (
+                        {isPending || isSuccess ? (
                             <>
                                 <LucideLoader2 className="size-5 animate-spin" />
-                                Signing in...
+                                {isSuccess ? 'Redirecting...' : 'Signing in...'}
                             </>
                         ) : (
                             'Sign In'

@@ -136,10 +136,29 @@
   }
 
   body {
-    @apply text-foreground bg-[#2a1e4a];
+    @apply text-foreground bg-[#0a0a0a];
     font-family: "Plus Jakarta Sans", sans-serif;
   }
 }
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-xl;
+  }
+  
+  .glass-panel {
+    @apply bg-[#13151a]/80 backdrop-blur-xl border-r border-white/5;
+  }
+
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400;
+  }
+}
+
 
 /* Scrollbar Modernization */
 ::-webkit-scrollbar {

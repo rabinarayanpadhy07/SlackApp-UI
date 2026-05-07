@@ -207,9 +207,10 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
     }, [socket]);
 
     useEffect(() => {
-        if (!socket || !isHuddleActive) return;
+        if (!socket) return;
 
         const handleUserJoined = async ({ socketId, user }) => {
+            if (!isHuddleActive || !localStreamRef.current || peersRef.current[socketId]) return;
             const peer = createPeer(socketId, user);
             const offer = await peer.createOffer();
             await peer.setLocalDescription(offer);
@@ -217,6 +218,7 @@ export const useWebRTC = (channelId, hasAiAccess = false) => {
         };
 
         const handleOffer = async ({ fromSocketId, user, offer }) => {
+            if (!localStreamRef.current) return;
             const peer = createPeer(fromSocketId, user);
             await peer.setRemoteDescription(new RTCSessionDescription(offer));
             const answer = await peer.createAnswer();

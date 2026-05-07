@@ -35,11 +35,15 @@ export const Payments = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#4A154B] px-4 py-10">
-      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2">
+    <div className="min-h-screen bg-[#0a0a0a] px-4 py-10 relative overflow-hidden text-slate-200">
+      {/* Background Ambient Glows */}
+      <div className="absolute top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none"></div>
+
+      <div className="max-w-5xl mx-auto grid gap-6 md:grid-cols-2 relative z-10">
 
         {/* NORMAL PLAN */}
-        <div className="bg-[#350D36] text-white rounded-2xl p-8 shadow-lg flex flex-col justify-between">
+        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl flex flex-col justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-4">Normal Plan</h2>
             <ul className="space-y-3 text-white/80">
@@ -56,7 +60,7 @@ export const Payments = () => {
           </div>
 
           <Button
-            className="mt-8 w-full rounded-full bg-white text-[#350D36] hover:bg-gray-200 cursor-pointer"
+            className="mt-8 w-full rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/5 cursor-pointer transition-all duration-300"
             onClick={() => navigate("/home")}
           >
             {isPaidPlan ? "Downgrade (Current Premium)" : "Continue With Current Plan"}
@@ -64,12 +68,15 @@ export const Payments = () => {
         </div>
 
         {/* PREMIUM PLAN */}
-        <div className={`bg-white rounded-2xl p-8 shadow-xl flex flex-col justify-between border-2 ${
-          isPaidPlan ? "border-green-500" : "border-[#4A154B]"
+        <div className={`bg-white/5 backdrop-blur-xl rounded-2xl p-8 shadow-2xl flex flex-col justify-between border relative overflow-hidden ${
+          isPaidPlan ? "border-green-500/50" : "border-purple-500/30"
         }`}>
-          <div>
+          {/* Subtle gradient overlay for Premium card */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 pointer-events-none" />
+          
+          <div className="relative z-10">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-900">
+              <h2 className="text-2xl font-bold text-white">
                 Premium Plan
               </h2>
 
@@ -80,36 +87,36 @@ export const Payments = () => {
               )}
             </div>
 
-            <ul className="space-y-3 text-gray-600">
+            <ul className="space-y-3 text-slate-300">
               <li className="flex items-center gap-2">
-                <CheckIcon size={18}/> Unlimited Workspace
+                <CheckIcon size={18} className="text-purple-400" /> Unlimited Workspace
               </li>
               <li className="flex items-center gap-2">
-                <CheckIcon size={18}/> Unlimited Channels
+                <CheckIcon size={18} className="text-purple-400" /> Unlimited Channels
               </li>
               <li className="flex items-center gap-2">
-                <CheckIcon size={18}/> AI Message Reply
+                <CheckIcon size={18} className="text-purple-400" /> AI Message Reply
               </li>
               <li className="flex items-center gap-2">
-                <CheckIcon size={18}/> AI Meeting Summary
+                <CheckIcon size={18} className="text-purple-400" /> AI Meeting Summary
               </li>
               <li className="flex items-center gap-2">
-                <CheckIcon size={18}/> Priority Support
+                <CheckIcon size={18} className="text-purple-400" /> Priority Support
               </li>
             </ul>
 
-            <div className="mt-6 bg-gray-100 rounded-xl p-6 text-center">
-              <p className="text-sm text-gray-500">Price</p>
-              <p className="text-4xl font-bold text-gray-900">₹ {amount}</p>
-              <p className="text-sm text-gray-500">One-time payment</p>
+            <div className="mt-6 bg-black/20 rounded-xl p-6 text-center border border-white/5">
+              <p className="text-sm text-slate-400">Price</p>
+              <p className="text-4xl font-bold text-white">₹ {amount}</p>
+              <p className="text-sm text-slate-400">One-time payment</p>
             </div>
           </div>
 
-          <form onSubmit={handleFormSubmit} className="mt-6">
+          <form onSubmit={handleFormSubmit} className="mt-6 relative z-10">
             <Button
               type="submit"
               disabled={isPending || isPaidPlan}
-              className="h-12 w-full rounded-full bg-[#611F69] hover:bg-[#4A154B] text-white text-lg cursor-pointer"
+              className="h-12 w-full rounded-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white text-lg cursor-pointer shadow-lg shadow-purple-500/20 transition-all duration-300 border border-white/10"
             >
               {isPaidPlan ? "You Already Own Premium" : "Upgrade to Premium"}
               {!isPaidPlan && <ArrowRightIcon className="ml-2 size-4" />}

@@ -1,5 +1,5 @@
 import { Loader2Icon, TriangleAlertIcon } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -12,19 +12,23 @@ import { useAuth } from '@/hooks/context/useAuth';
 import { useGetDirectMessages } from '@/hooks/apis/direct-messages/useGetDirectMessages';
 import { useSendDirectMessage } from '@/hooks/apis/direct-messages/useSendDirectMessage';
 import { getPreginedUrl, uploadImageToAWSpresignedUrl } from '@/apis/s3';
+import { useSocket } from '@/hooks/context/useSocket';
+import { getApiErrorMessage } from '@/utils/getApiErrorMessage';
 
 export const DirectMessage = () => {
 
     const { workspaceId: routeWorkspaceId, memberId } = useParams();
     const { currentWorkspace } = useCurrentWorkspace();
     const { auth } = useAuth();
+    const { socket } = useSocket();
     const queryClient = useQueryClient();
     const workspaceId = routeWorkspaceId || currentWorkspace?._id;
 
     const {
         messages,
         isFetching,
-        isError
+        isError,
+        error
     } = useGetDirectMessages({
         workspaceId,
         memberId
@@ -33,6 +37,51 @@ export const DirectMessage = () => {
     const { sendDirectMessage } = useSendDirectMessage();
 
     const messageContainerListRef = useRef(null);
+
+    const addMessageToCache = useCallback((message) => {
+        if (!message?._id || !workspaceId || !memberId) return;
+
+        queryClient.setQueryData(
+            ['directMessages', workspaceId, memberId, 1, 20],
+            (prev = []) => {
+                if (prev.some((item) => item._id === message._id)) return prev;
+                return [message, ...prev];
+            }
+        );
+    }, [memberId, queryClient, workspaceId]);
+
+    useEffect(() => {
+        if (!socket || !workspaceId || !memberId || !auth?.user?._id) return;
+
+        socket.emit('JoinDirectMessage', {
+            workspaceId,
+            memberId,
+            currentUserId: auth.user._id
+        });
+
+        const handleDirectMessageReceived = (message) => {
+            const senderId = String(message?.senderId?._id || message?.senderId || '');
+            const recipientId = String(message?.recipientId?._id || message?.recipientId || '');
+            const currentUserId = String(auth.user._id);
+            const messageWorkspaceId = String(message?.workspaceId || '');
+            const isCurrentConversation =
+                messageWorkspaceId === String(workspaceId) &&
+                (
+                    (senderId === currentUserId && recipientId === String(memberId)) ||
+                    (senderId === String(memberId) && recipientId === currentUserId)
+                );
+
+            if (!isCurrentConversation) return;
+
+            addMessageToCache(message);
+        };
+
+        socket.on('NewDirectMessageReceived', handleDirectMessageReceived);
+
+        return () => {
+            socket.off('NewDirectMessageReceived', handleDirectMessageReceived);
+        };
+    }, [addMessageToCache, auth?.user?._id, memberId, socket, workspaceId]);
 
     useEffect(() => {
         if(messageContainerListRef.current) {
@@ -62,7 +111,9 @@ export const DirectMessage = () => {
         return (
             <div className='h-full flex-1 flex flex-col gap-y-2 items-center justify-center'>
                 <TriangleAlertIcon className='size-6 text-muted-foreground' />
-                <span className='text-sm text-muted-foreground'>Conversation not found</span>
+                <span className='text-sm text-muted-foreground'>
+                    {getApiErrorMessage(error, 'Conversation could not be opened.')}
+                </span>
             </div>
         );
     }
@@ -73,7 +124,7 @@ export const DirectMessage = () => {
 
             <div
                 ref={messageContainerListRef}
-                className='flex-5 overflow-y-auto p-5 gap-y-2'
+                className='flex-1 overflow-y-auto p-5 gap-y-2'
             >
                 {messages.length === 0 ? (
                     <div className="h-full flex items-center justify-center text-sm text-muted-foreground">
@@ -95,7 +146,6 @@ export const DirectMessage = () => {
                 )}
             </div>
 
-            <div className='flex-1' />
             <TypingIndicator />
             <ChatInput
                 onSubmit={async ({ body, image }) => {
@@ -122,15 +172,46 @@ export const DirectMessage = () => {
                         }
                     }
 
-                    await sendDirectMessage({
+                    if (socket?.connected && auth?.user?._id) {
+                        try {
+                            const socketMessage = await new Promise((resolve, reject) => {
+                                const timeoutId = window.setTimeout(() => {
+                                    reject(new Error('Direct message socket timed out'));
+                                }, 5000);
+
+                                socket.emit('NewDirectMessage', {
+                                    workspaceId,
+                                    memberId,
+                                    senderId: auth.user._id,
+                                    body,
+                                    image: fileUrl
+                                }, (response) => {
+                                    window.clearTimeout(timeoutId);
+
+                                    if (response?.success) {
+                                        resolve(response.data);
+                                        return;
+                                    }
+                                    reject(new Error(response?.message || 'Failed to send direct message'));
+                                });
+                            });
+
+                            addMessageToCache(socketMessage);
+                            return;
+                        } catch (error) {
+                            console.error('Direct message socket send failed, falling back to HTTP:', error);
+                        }
+                    }
+
+                    const httpMessage = await sendDirectMessage({
                         workspaceId,
                         memberId,
                         body,
                         image: fileUrl
                     });
+                    addMessageToCache(httpMessage);
                 }}
             />
         </div>
     );
 };
-

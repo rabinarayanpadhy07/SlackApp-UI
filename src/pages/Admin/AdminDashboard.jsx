@@ -205,11 +205,10 @@ export const AdminDashboard = () => {
     };
 
     return (
-        <div className="relative flex h-dvh min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[#0a060c] text-[#f8f8f8] lg:flex-row">
-            <div
-                className="pointer-events-none absolute inset-0 bg-[linear-gradient(165deg,#1a0d1c_0%,#0a060c_55%)]"
-                aria-hidden
-            />
+        <div className="relative flex h-dvh min-h-0 w-full min-w-0 flex-col overflow-hidden bg-[#0a0a0a] text-slate-200 lg:flex-row">
+            {/* Background Ambient Glows */}
+            <div className="absolute top-0 left-1/4 w-72 md:w-96 h-72 md:h-96 bg-purple-600/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none z-0"></div>
+            <div className="absolute bottom-0 right-1/4 w-72 md:w-96 h-72 md:h-96 bg-blue-600/10 rounded-full blur-[80px] md:blur-[100px] pointer-events-none z-0"></div>
 
             <div className="relative z-[1] flex min-h-0 min-w-0 flex-1 flex-col lg:flex-row">
                 <AdminSidebar
@@ -219,7 +218,7 @@ export const AdminDashboard = () => {
                     metrics={metrics}
                 />
 
-                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-[#350d36] bg-[#120a14] lg:border-l">
+                <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden border-white/5 bg-transparent lg:border-l">
                     <AdminHeader
                         activeSectionLabel={activeSectionLabel}
                         canExport={Boolean(exportPayload?.rows?.length)}

@@ -1,6 +1,7 @@
 import 'quill/dist/quill.snow.css'; // ES6
 import 'quill-mention/autoregister';
 import 'quill-mention/dist/quill.mention.css';
+import 'quill-mention/dist/quill.mention.css';
 
 import { ImageIcon, XIcon } from 'lucide-react';
 import Quill from 'quill';
@@ -10,6 +11,7 @@ import { PiTextAa } from 'react-icons/pi';
 
 import { Button } from '@/components/ui/button';
 import { Hint } from '../Hint/Hint';
+
 export const Editor = ({
     variant = 'create',
     onSubmit,
@@ -150,8 +152,8 @@ export const Editor = ({
                             key: 'Enter',
                             shiftKey: true,
                             handler: (range) => {
-                                quill.insertText(range.index, '\n');
-                                quill.setSelection(range.index + 1);
+                                quillRef.current?.insertText(range.index, '\n');
+                                quillRef.current?.setSelection(range.index + 1);
                                 return false;
                             }
                         }
@@ -198,45 +200,43 @@ export const Editor = ({
 
 
     return (
-        <div
-            className='flex flex-col'
-        >
-
-            <div
-                className='flex flex-col border border-slate-300 rounded-md focus-within:shadow-sm focus-within:border-slate-400 bg-white relative'
-            >
-                <div className='h-full ql-custom' ref={containerRef} />
-                {
-                    image && (
-                        <div
-                            className='p-2'
-                        >
-                            <div className='relative size-[60px] flex items-center justify-center group/image'>
-                                <button
-                                    className='hidden group-hover/image:flex rounded-full bg-black/70 hover:bg-black absolute -top-2.5 -right-2.5 text-white size-6 z-[5] border-2 border-white items-center justify-center'
-                                    onClick={() => {
-                                        setImage(null);
+        <div className='flex flex-col'>
+            <div className='flex flex-col border border-purple-600/30 rounded-xl focus-within:shadow-[0_0_15px_rgba(147,51,234,0.15)] focus-within:border-purple-500/50 bg-[#13151a] relative overflow-hidden transition-all text-white'>
+                
+                {/* Quill Editor instance */}
+                <div className='h-full ql-custom text-slate-200' ref={containerRef} />
+                
+                {image && (
+                    <div className='p-2'>
+                        <div className='relative size-[60px] flex items-center justify-center group/image'>
+                            <button
+                                className='hidden group-hover/image:flex rounded-full bg-black/70 hover:bg-black absolute -top-2.5 -right-2.5 text-white size-6 z-[5] border-2 border-white items-center justify-center'
+                                onClick={() => {
+                                    setImage(null);
+                                    if (imageInputRef.current) {
                                         imageInputRef.current.value = '';
-                                    }}
-                                >
-                                    <XIcon className='size-4' />
-                                </button>
-                                <img 
-                                    src={URL.createObjectURL(image)}
-                                    className='rounded-xl overflow-hidden border object-cover'
-                                />
-                            </div>
+                                    }
+                                }}
+                            >
+                                <XIcon className='size-4' />
+                            </button>
+                            <img 
+                                src={URL.createObjectURL(image)}
+                                className='rounded-xl overflow-hidden border border-white/10 object-cover'
+                                alt="Attachment"
+                            />
                         </div>
-                    )
-                }
+                    </div>
+                )}
 
-                <div className='flex px-2 pb-2 z-[5]'>
-                    <Hint label={!isToolbarVisible ? 'Show toolbar' : 'Hide toolbar'} side='bottom' align='center'>
+                {/* Bottom Toolbar Actions */}
+                <div className='flex items-center px-2 pb-2 pt-1 z-[5] gap-1'>
+                    <Hint label={!isToolbarVisible ? 'Show toolbar' : 'Hide toolbar'} side='top' align='center'>
                         <Button
                             size="iconSm"
                             variant="ghost"
-                            disabled={false}
                             onClick={toggleToolbar}
+                            className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full size-8"
                         >
                             <PiTextAa className='size-4' />
                         </Button>
@@ -246,8 +246,8 @@ export const Editor = ({
                         <Button
                             size="iconSm"
                             variant="ghost"
-                            disabled={false}
-                            onClick={() => { imageInputRef.current.click(); }}
+                            onClick={() => { imageInputRef.current?.click(); }}
+                            className="text-slate-400 hover:text-white hover:bg-white/5 rounded-full size-8"
                         >
                             <ImageIcon className='size-4' />
                         </Button>
@@ -257,35 +257,33 @@ export const Editor = ({
                         type="file"
                         className='hidden'
                         ref={imageInputRef}
-                        onChange={(e) => setImage(e.target.files[0])}
+                        onChange={(e) => setImage(e.target.files?.[0] || null)}
                     />
 
-                    <div className="ml-auto flex items-center gap-2">
+                    {/* Send / Cancel Actions */}
+                    <div className="ml-auto flex items-center gap-2 pr-1">
                         {variant === 'update' && (
-                            <Button variant="outline" size="sm" onClick={onCancel}>
+                            <Button variant="ghost" size="sm" onClick={onCancel} className="text-slate-300 hover:text-white hover:bg-white/10 rounded-full h-8">
                                 Cancel
                             </Button>
                         )}
                         <Hint label="Send Message">
                             <Button
-                                size={variant === 'update' ? 'sm' : 'iconSm'}
-                                className="bg-[#007a6a] hover:bg-[#007a6a]/80 text-white"
+                                size={variant === 'update' ? 'sm' : 'icon'}
+                                className={`bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_10px_rgba(147,51,234,0.3)] transition-all ${variant === 'update' ? 'rounded-full h-8 px-4' : 'rounded-xl size-8'}`}
                                 onClick={() => {
                                     submitRef.current?.();
                                 }}
-                                disabled={false}
                             >
-                                {variant === 'update' ? 'Save' : <MdSend className='size-4' />}
+                                {variant === 'update' ? 'Save' : <MdSend className='size-4 ml-0.5' />}
                             </Button>
                         </Hint>
                     </div>
                 </div>
             </div>
 
-            <p
-                className='p-2 text-[10px] text-mutes-foreground flex justify-end'
-            >
-                <strong>Shift + return</strong> &nbsp; to add a new line
+            <p className='p-2 text-[11px] text-slate-500 flex justify-end font-medium'>
+                <strong>Shift + return</strong> <span className="ml-1 font-normal opacity-80">to add a new line</span>
             </p>
         </div>
     );
