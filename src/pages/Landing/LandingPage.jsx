@@ -18,9 +18,9 @@ export const LandingPage = () => {
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-purple-500/20">
-                            S
+                            W
                         </div>
-                        <span className="text-xl font-bold text-white tracking-tight">SlackApp</span>
+                        <span className="text-xl font-bold text-white tracking-tight">WorkSync</span>
                     </div>
                     <div className="flex items-center gap-4">
                         <Button
@@ -112,7 +112,7 @@ export const LandingPage = () => {
                     <div className="absolute inset-0 bg-white/5 backdrop-blur-sm pointer-events-none"></div>
                     <div className="relative z-10">
                         <h2 className="text-4xl font-bold text-white mb-6">Ready to transform your workflow?</h2>
-                        <p className="text-xl text-slate-300 mb-10">Join thousands of teams already using SlackApp.</p>
+                        <p className="text-xl text-slate-300 mb-10">Join thousands of teams already using WorkSync.</p>
                         <Button
                             size="lg"
                             className="h-14 px-10 text-lg rounded-full bg-white text-black hover:bg-slate-200 transition-colors"
@@ -131,7 +131,7 @@ export const LandingPage = () => {
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-lg shadow-purple-500/20">
                             S
                         </div>
-                        <span className="font-semibold text-slate-300">SlackApp © 2026 || All Rights Reserved </span>
+                        <span className="font-semibold text-slate-300">WorkSync © 2026 || All Rights Reserved </span>
                     </div>
 
                 </div>

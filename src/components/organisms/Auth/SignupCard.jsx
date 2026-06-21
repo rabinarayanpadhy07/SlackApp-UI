@@ -27,7 +27,7 @@ export const SignupCard = ({
                     Create your account
                 </CardTitle>
                 <CardDescription className="text-sm sm:text-base">
-                    Join thousands of teams on SlackApp
+                    Join thousands of teams on WorkSync
                 </CardDescription>
 
                 {validationError && (
